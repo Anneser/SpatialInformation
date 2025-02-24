@@ -1,7 +1,18 @@
-<<<<<<< HEAD
-# SpatialInformation
-=======
 # SpatialInformation
 
-analysis code for spatial information coding
->>>>>>> 4c67761 (initial commit)
+
+## Setup Instructions
+### General Coding Setup
+
+1. **Create and activate the virtual environment:**
+
+    ```bash
+    conda create --name SpatialInformation python=3.12
+    conda activate SpatialInformation
+    ```
+
+2. **Install the required packages:**
+
+    ```bash
+    pip install -r requirements.txt
+    ```
