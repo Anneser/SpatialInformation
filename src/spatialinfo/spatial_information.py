@@ -4,6 +4,13 @@ from pathlib import Path
 import seaborn as sns
 import matplotlib.pyplot as plt
 from PIL import Image
+from sklearn.preprocessing import MinMaxScaler
+from sklearn.model_selection import train_test_split
+from sklearn.metrics import accuracy_score, confusion_matrix, classification_report
+from sklearn.feature_selection import mutual_info_classif
+import tensorflow as tf
+from tensorflow.keras import layers, models
+from keras_tuner import HyperModel, RandomSearch
 
 
 def load_data(file_path: Path):
@@ -56,7 +63,7 @@ def binning(dff, behavior, n_bins=30, n_corr=2, fps=30, bins=None):
                     summed_traces (pandas.core.frame.DataFrame): summed activity for each bin, n_bins x n_corridors x n_neurons
                     bins (numpy.ndarray or IntervalIndex): returns the computed bins
     """
-    if bins == None:
+    if bins is None:
         # Create bin labels, cut the Y positions into bins and X into corridor values.
         behavior['Y_bin'], bins = pd.cut(behavior['Y'], bins=n_bins, labels=False, retbins=True)
     else:
@@ -196,7 +203,68 @@ def pop_z_score(spatial_spec):
     return (spatial_spec - spatial_spec.mean()) / std_dev
 
 
-def trials_over_time(neuron_ID, dff, behavior, n_bins=10, export_figure=False):
+def trials_over_time(dff, behavior, n_bins=30):
+    """
+    Returns a multi-index DataFrame containing the average activity per spatial bin 
+    per corridor per trial for each neuron.
+
+    Parameters:
+        dff (DataFrame): dF/F activity data in timepoints (rows) x neurons (columns).
+        behavior (DataFrame): Behavioral data in timepoints (rows) x behavior (column).
+        n_bins (int): Number of spatial bins to divide the Y-position.
+
+    Returns:
+        DataFrame: Multi-index DataFrame with (neuron, trial, corridor, Y_bin) as indices.
+    """
+
+    # Step 1: Extract metadata
+    n_neurons = dff.shape[1]
+    
+    # Step 2: Create spatial bins for Y-position
+    behavior['Y_bin'] = pd.cut(behavior['Y'], bins=n_bins, labels=False)
+
+    # Step 3: Identify unique trials and corridors
+    trials = behavior['trial'].unique()
+    corridors = behavior['X'].unique()
+
+    # Step 4: Initialize storage for results
+    results = []
+
+    # Step 5: Iterate over neurons, trials, and corridors
+    for neuron in range(n_neurons):
+        neuron_activity = dff.iloc[:, neuron]  # Select the neuron
+
+        for trial in trials:
+            trial_data = behavior[behavior['trial'] == trial]
+            trial_activity = neuron_activity.loc[trial_data.index]  # Activity for this trial
+            
+            for corridor in corridors:
+                corridor_data = trial_data[trial_data['X'] == corridor]
+                corridor_activity = trial_activity.loc[corridor_data.index]
+
+                # Compute average activity per spatial bin
+                avg_activity_per_bin = corridor_activity.groupby(corridor_data['Y_bin']).mean()
+
+                # Ensure all bins are represented (fill missing bins with NaN)
+                avg_activity_per_bin = avg_activity_per_bin.reindex(range(n_bins), fill_value=np.nan)
+
+                # Store results
+                for y_bin, activity in avg_activity_per_bin.items():
+                    results.append([neuron, trial, corridor, y_bin, activity])
+
+    # Step 6: Convert results to DataFrame
+    results_df = pd.DataFrame(results, columns=['neuron', 'trial', 'corridor', 'Y_bin', 'activity'])
+
+    # Step 7: Pivot to create a multi-dimensional DataFrame
+    # results_df = results_df.pivot_table(index=['neuron', 'trial', 'corridor'], columns='Y_bin', values='activity')
+    results_df = results_df.pivot_table(index=['neuron', 'trial', 'corridor', 'Y_bin'], values='activity')
+
+    # Step 8: Normalize activity per neuron (Min/Max scaling across all bins and trials)
+    # scaler = MinMaxScaler()
+    # results_df[:] = scaler.fit_transform(results_df) # scale later
+    return results_df
+
+def trials_over_time_figure(neuron_ID, dff, behavior, n_bins=10, export_figure=False):
     '''
     For any given neuron ID, this plots the activity per spatial bin per corridor per trial in two heatmaps
     with shared color scales and consistent x-axis (spatial bins).
@@ -270,30 +338,36 @@ def trials_over_time(neuron_ID, dff, behavior, n_bins=10, export_figure=False):
 
 def add_trial_column(behavior):
     """
-    Adds a "trial" column to the behavior DataFrame based on Y-position resets (teleports).
+    Adds a 'trial' column to the behavior DataFrame.
+    
+    A trial starts when:
+    1. The animal moves backward (Y-position decreases by being teleported to starting position).
+    2. The corridor changes (X-position changes).
 
     Parameters:
-        behavior (DataFrame): Behavioral data containing the Y column (position).
+        behavior (DataFrame): Must contain 'X' (corridor) and 'Y' (position in corridor).
 
     Returns:
-        behavior (DataFrame): Updated DataFrame with a new "trial" column.
+        behavior (DataFrame): Updated DataFrame with a new 'trial' column.
     """
-    # Initialize the trial counter and create an empty list for trial numbers
     trial_counter = 0
-    trial_numbers = []
+    trial_numbers = [0]  # First trial is always 0
 
-    # Iterate through the Y-position data
-    for i in range(len(behavior)):
-        # Check if the current Y position is 0 and the previous Y position was non-zero
-        if i > 0 and behavior.loc[i, 'Y'] == 0 and behavior.loc[i - 1, 'Y'] != 0:
-            # Increment the trial counter
-            trial_counter += 1
+    # Iterate through the behavior data (starting from index 1)
+    for i in range(1, len(behavior)):
+        # Get change in Y and change in X
+        y_diff = behavior.loc[i, "Y"] - behavior.loc[i - 1, "Y"]
+        x_diff = behavior.loc[i, "X"] - behavior.loc[i - 1, "X"]
 
-        # Assign the current trial number
+        # Check if a new trial should start
+        if y_diff < -1 or x_diff != 0: # -1 protects against positional jitter
+            trial_counter += 1  # Increment trial counter
+
+        # Append the trial number for the current row
         trial_numbers.append(trial_counter)
 
-    # Add the trial column to the DataFrame
-    behavior['trial'] = trial_numbers
+    # Assign trial numbers to the DataFrame
+    behavior["trial"] = trial_numbers
 
     return behavior
 
@@ -376,3 +450,64 @@ def plot_neurons(file_path: Path, neuron_index: np.ndarray, spec_df, save_figure
         plt.show()
 
     plt.close()
+
+
+def format_for_ann(df):
+    """
+    Converts the multi-index DataFrame into input-output format for training a neural network.
+    
+    Ensures that each row represents one spatial bin (with trial & corridor info),
+    and columns represent neuronal activity.
+
+    Parameters:
+        df (DataFrame): Multi-index DataFrame with (neuron, trial, corridor, Y_bin) indices.
+
+    Returns:
+        X (ndarray): Feature matrix where each row is a neuronal activity vector (neurons as columns).
+        y (tuple): Tuple of target labels (bins, corridors).
+    """
+    # Reset index so we can manipulate it
+    df = df.reset_index()
+
+    # Pivot so that each row represents a (trial, corridor, bin), and each column is a neuron
+    reshaped_df = df.pivot_table(index=['trial', 'corridor', 'Y_bin'], columns='neuron', values='activity')
+
+    # Drop any remaining NaNs (bins with missing neuron activity)
+    reshaped_df = reshaped_df.dropna()
+
+    # Extract the final feature matrix
+    X = reshaped_df.values  # Now, shape (n_samples, n_neurons)
+    scaler = MinMaxScaler()
+    X = scaler.fit_transform(X)
+
+    # Extract labels
+    y_bins = reshaped_df.index.get_level_values('Y_bin').values  # Bin labels
+    y_corridors = reshaped_df.index.get_level_values('corridor').values  # Corridor labels
+
+    # Map corridor labels to categorical values (0 and 1)
+    unique_corridors = sorted(np.unique(y_corridors))
+    corridor_mapping = {unique_corridors[0]: 0, unique_corridors[1]: 1}
+    y_corridors = np.array([corridor_mapping[c] for c in y_corridors])
+
+    return X, (y_bins, y_corridors)
+
+
+def proximity_weighted_accuracy(y_true, y_pred, max_distance=2):
+    """
+    Compute accuracy where predictions closer to the true bin get partial credit.
+
+    Parameters:
+        y_true (array-like): True bin labels.
+        y_pred (array-like): Predicted bin labels.
+        max_distance (int): Maximum distance for partial credit.
+
+    Returns:
+        float: Proximity-weighted accuracy score.
+    """
+    total_score = 0
+    for true, pred in zip(y_true, y_pred):
+        distance = abs(true - pred)
+        if distance <= max_distance:
+            total_score += 1 - (distance / (max_distance + 1))
+    
+    return total_score / len(y_true)
