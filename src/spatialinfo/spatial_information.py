@@ -65,10 +65,10 @@ def binning(dff, behavior, n_bins=30, n_corr=2, fps=30, bins=None):
     """
     if bins is None:
         # Create bin labels, cut the Y positions into bins and X into corridor values.
-        behavior['Y_bin'], bins = pd.cut(behavior['Y'], bins=n_bins, labels=False, retbins=True)
+        behavior.loc[:,'Y_bin'], bins = pd.cut(behavior['Y'], bins=n_bins, labels=False, retbins=True)
     else:
-        behavior['Y_bin'] = pd.cut(behavior['Y'], bins=bins, labels=False)
-    behavior['X_bin'] = pd.cut(behavior['X'], bins=len(behavior.X.unique()))
+        behavior.loc[:,'Y_bin'] = pd.cut(behavior['Y'], bins=bins, labels=False)
+    behavior.loc[:,'X_bin'] = pd.cut(behavior['X'], bins=len(behavior.X.unique()))
 
     # Group by the corridor ID (X position) and Y-bin, and calculate the time per bin
     time_per_bin = behavior.groupby(['X_bin', 'Y_bin'], observed=False).size().unstack(fill_value=0)
