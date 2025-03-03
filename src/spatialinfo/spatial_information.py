@@ -68,10 +68,10 @@ def binning(dff, behavior, n_bins=30, n_corr=2, fps=30, bins=None):
         behavior.loc[:,'Y_bin'], bins = pd.cut(behavior['Y'], bins=n_bins, labels=False, retbins=True)
     else:
         behavior.loc[:,'Y_bin'] = pd.cut(behavior['Y'], bins=bins, labels=False)
-    behavior.loc[:,'X_bin'] = pd.cut(behavior['X'], bins=len(behavior.X.unique()))
+    # behavior.loc[:,'X_bin'] = pd.cut(behavior['X'], bins=len(behavior.X.unique()))
 
     # Group by the corridor ID (X position) and Y-bin, and calculate the time per bin
-    time_per_bin = behavior.groupby(['X_bin', 'Y_bin'], observed=False).size().unstack(fill_value=0)
+    time_per_bin = behavior.groupby(['X', 'Y_bin'], observed=False).size().unstack(fill_value=0)
 
     # Automatically generate column names based on the number of corridors
     num_corridors = time_per_bin.shape[0]
@@ -343,6 +343,7 @@ def add_trial_column(behavior):
     A trial starts when:
     1. The animal moves backward (Y-position decreases by being teleported to starting position).
     2. The corridor changes (X-position changes).
+    Trials with fewer than 30 timepoints are merged with the previous trial.
 
     Parameters:
         behavior (DataFrame): Must contain 'X' (corridor) and 'Y' (position in corridor).
@@ -350,9 +351,11 @@ def add_trial_column(behavior):
     Returns:
         behavior (DataFrame): Updated DataFrame with a new 'trial' column.
     """
+    MIN_TRIAL_LENGTH = 30
     trial_counter = 0
     trial_numbers = [0]  # First trial is always 0
-
+    trial_start_idx = 0  # Track start of current trial
+    
     # Iterate through the behavior data (starting from index 1)
     for i in range(1, len(behavior)):
         # Get change in Y and change in X
@@ -361,8 +364,14 @@ def add_trial_column(behavior):
 
         # Check if a new trial should start
         if y_diff < -1 or x_diff != 0: # -1 protects against positional jitter
-            trial_counter += 1  # Increment trial counter
-
+            # Check length of previous trial
+            trial_length = i - trial_start_idx
+            
+            if trial_length >= MIN_TRIAL_LENGTH:
+                trial_counter += 1  # Increment trial counter
+                trial_start_idx = i
+            # If trial too short, keep previous trial number (effectively merging with previous trial)
+            
         # Append the trial number for the current row
         trial_numbers.append(trial_counter)
 
