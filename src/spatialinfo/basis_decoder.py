@@ -3,18 +3,19 @@ from spatialinfo.spatial_information import remove_interpolated_values, binning,
 import numpy as np
 import pandas as pd
 
-def fixed_template(dff, behavior, n_corridors=2, n_bins=30):
+def fixed_template(dff, behavior, n_corridors=2, n_bins=30, n_neurons=5):
     """
     Implements direct basis decoding with LOOCV using fixed binning.
 
     Parameters:
-        dff (DataFrame): Calcium imaging traces for all neurons.
-        behavior (DataFrame): Behavioral data with X (corridor), Y (position).
+        dff (pandas.DataFrame): Calcium imaging traces for all neurons.
+        behavior (pandas.DataFrame): Behavioral data with X (corridor), Y (position).
         n_corridors (int): Number of corridors in the setting (default=2).
         n_bins (int): Number of spatial bins (default=30).
+        n_neurons (int): Number of most active neurons to use for decoding (default=5).
 
     Returns:
-        decoded_position (DataFrame): Decoded X and Y positions.
+        decoded_position (pandas.DataFrame): Decoded X and Y positions.
     """
     # Preprocess behavior data
     bh = remove_interpolated_values(behavior, n_corr=n_corridors)
@@ -68,14 +69,14 @@ def fixed_template(dff, behavior, n_corridors=2, n_bins=30):
             # Extract the population vector for this bin
             pop_vector = standardized_loocv_bins.xs(key=corridor, level="Corridor", axis=1).loc[space_bin]
                 
-            # Get the 30 most active cells in this bin using standardized values
-            top_30_neurons = pop_vector.nlargest(30)
+            # Get the most active cells in this bin using standardized values
+            top_neurons = pop_vector.nlargest(n_neurons)
                 
             # Calculate relative activity (how much more active compared to others)
-            relative_activity = top_30_neurons #/ top_30_neurons.mean()
+            relative_activity = top_neurons / top_neurons.sum()
 
             # Get corresponding activity maps from standardized templates
-            scaled_matrix = standardized_act_mtx[top_30_neurons.index].multiply(relative_activity, axis=1, level="Neuron")
+            scaled_matrix = standardized_act_mtx[top_neurons.index].multiply(relative_activity, axis=1, level="Neuron")
 
             # Sum across neurons for each corridor separately
             decoded_map = pd.DataFrame()
