@@ -182,7 +182,7 @@ def spec_z_score(dff, behavior, sampling_rate=30, n_permut=1000, n_bins=10):
             shifted_behavior = behavior.copy()
 
         # Calculate specificity score for the shifted data
-        time_per_bin, summed_traces = binning(dff, shifted_behavior, n_bins=n_bins)
+        time_per_bin, summed_traces, _ = binning(dff, shifted_behavior, n_bins=n_bins)
         avg_act_mtx = avg_activity(time_per_bin, summed_traces)
         spatial_info, spatial_spec = spatial_info_calc(avg_act_mtx, time_per_bin)
         shifted_spec = [spec for spec in shifted_spec if not spec.isna().any() and not np.isinf(spec).any()]
@@ -520,3 +520,64 @@ def proximity_weighted_accuracy(y_true, y_pred, max_distance=2):
             total_score += 1 - (distance / (max_distance + 1))
     
     return total_score / len(y_true)
+
+def place_field_size(avg_activity_mtx, neuron_ID, n_bins=30, chamber_size=150): # FIXME
+    '''
+    Calculates the place fields of bona fide place cells and returns their center of mass as well as their size.
+    
+    Parameters: 
+        avg_activity_mtx (DataFrame): Average activity in each spatial bin (MultiIndex: Neuron, Corridor).
+        neuron_ID (array): List of bona fide place cells to be used for indexing.
+        n_bins (int): Number of spatial bins (default: 30).
+        chamber_size (int): Size of the chamber in VR units (default: 150).
+    
+    Returns:
+        pf_list (list of dicts): List of dictionaries with the size and center of mass of the place fields for each neuron.
+    '''
+    pf_list = []
+
+    # Iterate over each neuron in the provided list
+    for neuron in neuron_ID:
+        neuron_data = avg_activity_mtx.T.xs(neuron, level='Neuron')
+
+        # Step 1: Determine the peak activity (95th percentile) for the neuron
+        peak_activity = np.percentile(neuron_data.values, 95)
+
+        # Step 2: Define the place field threshold (80% of the peak activity)
+        threshold = 0.8 * peak_activity
+        
+        # Step 3: Identify place fields as contiguous regions above the threshold
+        place_fields = []
+        for corridor in neuron_data.T.columns:
+            activity = neuron_data[corridor].values
+            above_threshold = activity > threshold
+
+            # Find contiguous bins above the threshold
+            place_field_bins = []
+            current_field = []
+            for idx, is_above in enumerate(above_threshold):
+                if is_above:
+                    current_field.append(idx)
+                elif current_field:
+                    # Append and reset the current field
+                    place_field_bins.append(current_field)
+                    current_field = []
+
+            # Check the last field
+            if current_field:
+                place_field_bins.append(current_field)
+
+             # Step 4: Calculate the COM and size for each place field
+            for pf in place_field_bins:
+                pf_size = len(pf) / n_bins * chamber_size
+                #if pf_size < 0.3 * chamber_size:  # Filter by size (less than 30% of chamber size)
+                #pf_com = center_of_mass(activity[pf])
+                place_fields.append({'size': pf_size})
+
+        # Step 5: Store the results for the current neuron
+        pf_list.append({
+            'neuron': neuron,
+            'place_fields': place_fields
+        })
+
+    return pf_list
