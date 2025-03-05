@@ -6,7 +6,7 @@ build-backend = "setuptools.build_meta"
 name = "spatialinfo"
 version = "0.1.0"
 description = "analysis scripts for neural spatial information coding"
-authors = [{ name = "Lukas Anneser", email = "lukas.anneser@fmi.ch" }]
+authors = [{ name = "Lukas Anneser", email = "lukas.anneser@fmi.ch"}]
 dependencies = []
 
 [tool.setuptools]
