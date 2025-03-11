@@ -1,4 +1,5 @@
 import numpy as np
+import warnings
 
 # function to create templates from calcium traces and positional data
 
@@ -73,7 +74,7 @@ def create_templates(dff: np.ndarray, behavior: np.ndarray, n_bins: int = 30, av
     if average:
         pass
 
-    return averaged_features, unique_bin_values, bin_edges
+    return averaged_features.astype(float), unique_bin_values, bin_edges
 
 
 def match_templates(templates: np.ndarray, positions: np.ndarray, input_vector: np.ndarray, distance_metric: str = "cross-correlation"):
@@ -115,4 +116,48 @@ def match_templates(templates: np.ndarray, positions: np.ndarray, input_vector: 
         >>> match_templates(templates, positions, input_vector, distance_metric="cosine")
         (3, 1)
     """
-    pass
+    if distance_metric not in ["cross-correlation", "cosine", "euclidean", "mahalanobis"]:
+        raise ValueError('unknown distance metric. Accepted values: "cross-correlation", "cosine", "euclidean", "mahalanobis"')
+    
+    # the input vector is stacked as the last column of the templates
+    template_matrix = np.column_stack((templates.T, input_vector)).astype(float).T
+    match distance_metric:
+        case "cross-correlation":
+            return positions[np.argmax(np.corrcoef(template_matrix)[-1,:-1])]
+
+        case "cosine":
+            dot_product = np.linalg.multi_dot([input_vector, templates.T])
+            magnitude = [np.linalg.norm(templates[i,:]) for i in range(np.shape(templates)[0])]
+            mag_input = np.sqrt(input_vector.dot(input_vector))
+            return positions[np.argmax(dot_product / (np.array(magnitude).dot(mag_input)))]
+
+        case "euclidean":
+            diff_matrix = np.array([templates[i,:] - input_vector for i in range(np.shape(templates)[0])])
+            eucl_dist = [np.linalg.norm(diff_matrix[j,:]) for j in range(np.shape(diff_matrix)[0])]
+            return positions[np.argmin(eucl_dist)]
+
+        case "mahalanobis":
+            if len(np.unique(positions)) == len(positions):
+                warnings.warn("provided templates do not support operations on distributions. Output defaults to euclidean distance.")
+            
+            bin_mahal_output = np.zeros(np.shape(np.unique(positions)))
+
+            for bin in np.unique(positions):
+                template_distribution = templates[(np.array(positions)==bin).nonzero(),:][0].astype(float)
+                bin_mahal = mahalanobis(input_vector, template_distribution)
+                bin_mahal_output[bin - np.min(np.unique(positions))] = bin_mahal
+
+            return np.argmin(bin_mahal_output) + 1
+
+
+def mahalanobis(y=None, data=None, cov=None):
+    y_mu = y - np.mean(data, axis=0) 
+    if not cov: 
+        cov = np.cov(data.T) 
+    inv_covmat = np.linalg.inv(cov) 
+
+    left = np.dot(y_mu, inv_covmat)
+    mahal = np.sqrt(np.abs(np.dot(left, y_mu.T)))
+    return mahal 
+
+ 
