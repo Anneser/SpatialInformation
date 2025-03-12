@@ -77,7 +77,7 @@ def create_templates(dff: np.ndarray, behavior: np.ndarray, n_bins: int = 30, av
     return averaged_features.astype(float), unique_bin_values, bin_edges
 
 
-def match_templates(templates: np.ndarray, positions: np.ndarray, input_vector: np.ndarray, distance_metric: str = "cross-correlation"):
+def match_templates(templates: np.ndarray, positions: np.ndarray, input_vector: np.ndarray, distance_metric: str = "correlation"):
     """
     Decodes the position based on the closest matching template.
 
@@ -88,15 +88,14 @@ def match_templates(templates: np.ndarray, positions: np.ndarray, input_vector: 
         templates (numpy.ndarray): 
             A 2D array where each column represents a different template.
         positions (numpy.ndarray): 
-            A 2D array where:
+            A 1D array where:
             - Column 1 contains spatial bin indices.
-            - Column 2 contains corridor identifiers.
             - Rows correspond to the columns in `templates`.
         input_vector (numpy.ndarray): 
             A 1D array representing the input vector to be decoded based on similarity to `templates`.
         distance_metric (str, optional): 
             The metric used to determine the closest match. Supported values are:
-            - "cross-correlation" (default)
+            - "correlation" (default)
             - "cosine"
             - "euclidean"
             - "mahalanobis"
@@ -111,25 +110,25 @@ def match_templates(templates: np.ndarray, positions: np.ndarray, input_vector: 
 
     Example:
         >>> templates = np.random.rand(100, 5)  # 5 templates
-        >>> positions = np.array([[1, 0], [2, 0], [3, 1], [4, 1], [5, 2]])
+        >>> positions = np.array([1,2,3,4,5])
         >>> input_vector = np.random.rand(100)
         >>> match_templates(templates, positions, input_vector, distance_metric="cosine")
-        (3, 1)
+        (3)
     """
-    if distance_metric not in ["cross-correlation", "cosine", "euclidean", "mahalanobis"]:
-        raise ValueError('unknown distance metric. Accepted values: "cross-correlation", "cosine", "euclidean", "mahalanobis"')
+    if distance_metric not in ["correlation", "cosine", "euclidean", "mahalanobis"]:
+        raise ValueError('unknown distance metric. Accepted values: "correlation", "cosine", "euclidean", "mahalanobis"')
     
     # the input vector is stacked as the last column of the templates
     template_matrix = np.column_stack((templates.T, input_vector)).astype(float).T
     match distance_metric:
-        case "cross-correlation":
+        case "correlation":
             return positions[np.argmax(np.corrcoef(template_matrix)[-1,:-1])]
 
         case "cosine":
             dot_product = np.linalg.multi_dot([input_vector, templates.T])
             magnitude = [np.linalg.norm(templates[i,:]) for i in range(np.shape(templates)[0])]
             mag_input = np.sqrt(input_vector.dot(input_vector))
-            return positions[np.argmax(dot_product / (np.array(magnitude).dot(mag_input)))]
+            return positions[np.argmax(dot_product / (np.array(magnitude).dot(mag_input)))] 
 
         case "euclidean":
             diff_matrix = np.array([templates[i,:] - input_vector for i in range(np.shape(templates)[0])])
@@ -150,14 +149,12 @@ def match_templates(templates: np.ndarray, positions: np.ndarray, input_vector: 
             return np.argmin(bin_mahal_output) + 1
 
 
-def mahalanobis(y=None, data=None, cov=None):
+def mahalanobis(y=None, data=None):
     y_mu = y - np.mean(data, axis=0) 
-    if not cov: 
-        cov = np.cov(data.T) 
+    cov = np.cov(data.T) 
     inv_covmat = np.linalg.inv(cov) 
-
     left = np.dot(y_mu, inv_covmat)
-    mahal = np.sqrt(np.abs(np.dot(left, y_mu.T)))
+    mahal = np.sqrt((np.dot(left, y_mu.T)))
     return mahal 
 
  

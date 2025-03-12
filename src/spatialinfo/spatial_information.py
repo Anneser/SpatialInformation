@@ -581,3 +581,48 @@ def place_field_size(avg_activity_mtx, neuron_ID, n_bins=30, chamber_size=150): 
         })
 
     return pf_list
+
+
+def temporal_binning(dff, behavior, sec_per_bin=1, fps=30):
+    """
+    Bins occupancy and activity data into temporal bins. 
+    Assumes that distinct corridors are characterized by X position and that a trial column exists in behavior
+
+            Parameters:
+                    dff (pandas.core.frame.DataFrame): df/f calcium imaging data (rows: time; columns: neurons)
+                    behavior (pandas.core.frame.DataFrame): contains X, Y columns with spatial information, trial column and frdIn with tail vigor
+                    sec_per_bin (int): how many seconds will be averaged into one bin, defaults to 1.
+                    fps (int): recording speed in frames per second, defaults to 30
+                    
+            Returns:
+                    activity_data (np.ndarray): activity matrix after binning, columns = features, rows = bins
+                    spatial_data (np.ndarray): average position of animal during each bin, columns = X, Y, rows = bins
+    """
+    # Compute the number of frames per bin
+    frames_per_bin = sec_per_bin * fps
+        
+    # Determine number of bins
+    num_bins = int(np.ceil(len(dff) / frames_per_bin))
+    
+    # Initialize lists to store binned data
+    binned_activity = []
+    binned_spatial = []
+    
+    for i in range(num_bins):
+        start_idx = i * frames_per_bin
+        end_idx = min((i + 1) * frames_per_bin, len(dff))
+        
+        activity_bin = dff.iloc[start_idx:end_idx].mean(axis=0).values
+        spatial_bin = behavior[['X', 'Y']].iloc[start_idx:end_idx].mean(axis=0).values
+
+        if np.any(np.diff(behavior.trial.iloc[start_idx:end_idx].values)!=0):
+            continue
+        else:
+            binned_activity.append(activity_bin)
+            binned_spatial.append(spatial_bin)
+    
+    # Convert lists to numpy arrays
+    activity_data = np.array(binned_activity).astype(float)
+    spatial_data = np.array(binned_spatial).astype(float)
+    
+    return activity_data, spatial_data
