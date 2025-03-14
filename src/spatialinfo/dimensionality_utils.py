@@ -9,15 +9,15 @@ obtained from https://github.com/PridaLab/hippocampal_manifolds
 # FIXME - installing libraries breaks env
 from tqdm import tqdm
 import numpy as np 
-#from kneed import KneeLocator
-#import umap
+from kneed import KneeLocator
+import umap
 import spatialinfo.validation as dimval 
 import scipy.spatial 
 
 
 def compute_abids(arr, n_neigh=50, verbose=True):
     """
-    Compute the Adaptive Ball-Based Intrinsic Dimensionality (ABID) of a dataset.
+    Compute the Angle-Based Intrinsic Dimensionality (ABID) of a dataset.
 
     Parameters:
         arr (numpy.ndarray):
@@ -33,7 +33,7 @@ def compute_abids(arr, n_neigh=50, verbose=True):
     """
     
     def abid(X, k, x, search_struct, offset=1):
-        """Computes the Adaptive Ball-Based Intrinsic Dimensionality (ABID) for a given point."""
+        """Computes the Angle-Based Intrinsic Dimensionality (ABID) for a given point."""
         neighbor_norms, neighbor_indices = search_struct.query(x, k + offset)
         
         # Extract neighbor coordinates and compute displacement vectors
