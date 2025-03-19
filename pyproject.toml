@@ -7,7 +7,7 @@ name = "spatialinfo"
 version = "0.1.0"
 description = "analysis scripts for neural spatial information coding"
 authors = [{ name = "Lukas Anneser", email = "lukas.anneser@fmi.ch"}]
-dependencies = []
+dependencies = ["numpy"]
 
-[tool.setuptools]
-packages = ["spatialinfo"]
+[tool.setuptools.packages.find]
+where = ["src"]

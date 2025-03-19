@@ -25,3 +25,9 @@
     ```bash
     conda env create --file environment.yml
     ```
+
+3. **Install modules**
+    ```bash
+    pip install -e . 
+    ```
+
