@@ -1,5 +1,6 @@
 import numpy as np
 import pandas as pd
+import math
 from pathlib import Path
 import seaborn as sns
 import matplotlib.pyplot as plt
@@ -583,7 +584,7 @@ def place_field_size(avg_activity_mtx, neuron_ID, n_bins=30, chamber_size=150): 
     return pf_list
 
 
-def temporal_binning(dff, behavior, sec_per_bin=1, fps=30):
+def temporal_binning(dff, behavior, sec_per_bin=1, fps=30, only_moving=True):
     """
     Bins occupancy and activity data into temporal bins. 
     Assumes that distinct corridors are characterized by X position and that a trial column exists in behavior
@@ -593,6 +594,7 @@ def temporal_binning(dff, behavior, sec_per_bin=1, fps=30):
                     behavior (pandas.core.frame.DataFrame): contains X, Y columns with spatial information, trial column and frdIn with tail vigor
                     sec_per_bin (int): how many seconds will be averaged into one bin, defaults to 1.
                     fps (int): recording speed in frames per second, defaults to 30
+                    only_moving (bool): removing frames in which the animal is not moving, defaults to True.
                     
             Returns:
                     activity_data (np.ndarray): activity matrix after binning, columns = features, rows = bins
@@ -600,7 +602,12 @@ def temporal_binning(dff, behavior, sec_per_bin=1, fps=30):
     """
     # Compute the number of frames per bin
     frames_per_bin = sec_per_bin * fps
-        
+
+    # remove frames in which the animal is not moving
+    if only_moving:
+        id_mask = behavior.Y.diff().values!=0
+        dff = dff.loc[id_mask].reset_index()
+        behavior = behavior.loc[id_mask].reset_index()
     # Determine number of bins
     num_bins = int(np.ceil(len(dff) / frames_per_bin))
     
@@ -609,8 +616,8 @@ def temporal_binning(dff, behavior, sec_per_bin=1, fps=30):
     binned_spatial = []
     
     for i in range(num_bins):
-        start_idx = i * frames_per_bin
-        end_idx = min((i + 1) * frames_per_bin, len(dff))
+        start_idx = math.floor(i * frames_per_bin)
+        end_idx = math.ceil(min((i + 1) * frames_per_bin, len(dff)))
         
         activity_bin = dff.iloc[start_idx:end_idx].mean(axis=0).values
         spatial_bin = behavior[['X', 'Y']].iloc[start_idx:end_idx].mean(axis=0).values
