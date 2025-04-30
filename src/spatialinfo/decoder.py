@@ -72,7 +72,7 @@ def create_templates(dff: np.ndarray, behavior: np.ndarray, n_bins: int = 30, av
     unique_bin_values = [unique_bins[segment[0]] for segment in segment_splits]  # First value of each segment
 
     if average:
-        pass
+        pass # FIXME
 
     return averaged_features.astype(float), unique_bin_values, bin_edges
 
