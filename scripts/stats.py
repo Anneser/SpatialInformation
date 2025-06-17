@@ -12,6 +12,8 @@ import matplotlib.pyplot as plt
 import pandas as pd
 import seaborn as sns
 
+import spatialinfo.spatial_information as si
+
 
 def parse_args():
     parser = argparse.ArgumentParser(description="Calculate statistical metrics")
@@ -30,7 +32,7 @@ def parse_args():
     return parser.parse_args()
 
 
-def calculate_neural_stats(dff_data):
+def calculate_neural_stats(dff_data, behavior_data):
     """Calculate basic statistics of neural activity."""
     stats = {
         "mean_activity": dff_data.mean(),
@@ -38,7 +40,15 @@ def calculate_neural_stats(dff_data):
         "max_activity": dff_data.max(),
         "sparseness": (dff_data > 0).mean(),
     }
-    return pd.DataFrame(stats)
+    time_per_bin, summed_traces, _ = si.binning(dff_data, behavior_data)
+    avg_act_mtx = si.avg_activity(time_per_bin, summed_traces)
+    spatial_info, spatial_spec = si.spatial_info_calc(avg_act_mtx, time_per_bin)
+
+    spec_z_score_values = si.spec_z_score(
+        dff_data, behavior_data, n_permut=100, n_bins=30
+    )
+    pop_z_score_values = si.pop_z_score(spatial_spec)
+    return pd.DataFrame(stats), spec_z_score_values, pop_z_score_values
 
 
 def calculate_behavioral_stats(behavior_data):
@@ -61,10 +71,10 @@ def main():
 
             # Load preprocessed data
             dff_data = pd.read_pickle(session_dir / "processed_dff.pkl")
-            # behavior_data = pd.read_pickle(session_dir / "processed_behavior.pkl")
+            behavior_data = pd.read_pickle(session_dir / "processed_behavior.pkl")
 
             # Calculate statistics
-            neural_stats = calculate_neural_stats(dff_data)
+            neural_stats = calculate_neural_stats(dff_data, behavior_data)
             all_neural_stats.append(neural_stats)
 
             # Generate plots
