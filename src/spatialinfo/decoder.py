@@ -1,6 +1,11 @@
 import warnings
 
 import numpy as np
+import pandas as pd
+import tensorflow as tf
+from tf.keras import layers, models
+
+from spatialinfo.spatial_information import avg_activity, binning
 
 # function to create templates from calcium traces and positional data
 
@@ -200,9 +205,208 @@ def match_templates(
 
 
 def mahalanobis(y=None, data=None):
+    """Calculate the Mahalanobis distance between a point and a distribution.
+
+    The Mahalanobis distance is a measure of the distance between a point P and the mean
+    of a distribution D, scaled by the covariance matrix.
+    It represents how many standard     deviations away P is from the mean of D.
+
+    Parameters:
+        y (numpy.ndarray): Point for which to calculate the Mahalanobis distance.
+            Should be a 1-D array.
+        data (numpy.ndarray): Dataset representing the distribution.
+        Should be a 2-D array where rows are observations and columns are variables.
+
+    Returns:
+        float: The Mahalanobis distance between the point and the distribution.
+
+    Raises:
+        numpy.linalg.LinAlgError: If the covariance matrix is singular and
+        cannot be inverted.
+
+    Note:
+        The function assumes the data is normally distributed and the covariance matrix
+        is positive definite.
+    """
     y_mu = y - np.mean(data, axis=0)
     cov = np.cov(data.T)
     inv_covmat = np.linalg.inv(cov)
     left = np.dot(y_mu, inv_covmat)
     mahal = np.sqrt((np.dot(left, y_mu.T)))
     return mahal
+
+
+def fixed_template(dff, behavior, n_bins=30, n_neurons=5):
+    """
+    Implements direct basis decoding with LOOCV using fixed binning.
+
+    Parameters:
+        dff (pandas.DataFrame): Calcium imaging traces for all neurons.
+        behavior (pandas.DataFrame): Behavioral data with X (corridor), Y (position).
+        n_corridors (int): Number of corridors in the setting (default=2).
+        n_bins (int): Number of spatial bins (default=30).
+        n_neurons (int): Number of most active neurons to use for decoding (default=5).
+
+    Returns:
+        decoded_position (pandas.DataFrame): Decoded X and Y positions.
+    """
+    # Preprocess behavior data
+    # bh = remove_interpolated_values(behavior, n_corr=n_corridors)
+    # if "trial" not in bh.columns:
+    #    bh = add_trial_column(bh)
+
+    # Initialize storage for decoded results
+    decoded_positions = []
+
+    # Perform Leave-One-Out Cross-Validation (LOOCV)
+    for trial in behavior["trial"].unique():
+        print(f"Performing LOOCV on trial {trial}.")
+
+        # Split data into training and test sets
+        dff_test = dff[behavior["trial"] == trial]
+        dff_train = dff[behavior["trial"] != trial]
+        bh_test = behavior[behavior["trial"] == trial]
+        bh_train = behavior[behavior["trial"] != trial]
+
+        # Compute binning for training data
+        time_per_bin, summed_traces, bins = binning(dff_train, bh_train, n_bins=n_bins)
+        # Compute average activity templates (fixed decoder)
+        avg_act_mtx = avg_activity(time_per_bin, summed_traces)
+
+        # Apply the same binning to test data
+        time_per_bin, summed_traces, _ = binning(
+            dff_test, bh_test, n_bins=n_bins, bins=bins
+        )
+        loocv_bins = avg_activity(time_per_bin, summed_traces)
+
+        # Standardize each neuron's activity across all bins and corridors
+        standardized_act_mtx = avg_act_mtx.copy()
+        standardized_loocv_bins = loocv_bins.copy()
+        # neuron_stats = {}  # Store means and stds for later normalization
+        for neuron in range(dff.shape[1]):
+            neuron_mean = avg_act_mtx.loc[
+                :, avg_act_mtx.columns.get_level_values("Neuron") == neuron
+            ].values.mean()
+            neuron_std = avg_act_mtx.loc[
+                :, avg_act_mtx.columns.get_level_values("Neuron") == neuron
+            ].values.std()
+            standardized_act_mtx.loc[
+                :, standardized_act_mtx.columns.get_level_values("Neuron") == neuron
+            ] = (
+                avg_act_mtx.loc[
+                    :, avg_act_mtx.columns.get_level_values("Neuron") == neuron
+                ]
+                - neuron_mean
+            ) / neuron_std
+            standardized_loocv_bins.loc[
+                :, standardized_loocv_bins.columns.get_level_values("Neuron") == neuron
+            ] = (
+                loocv_bins.loc[
+                    :, loocv_bins.columns.get_level_values("Neuron") == neuron
+                ]
+                - neuron_mean
+            ) / neuron_std
+
+        # Get the single corridor value for this trial
+        # Check if there's only one unique X value, otherwise take the most common one
+        if len(bh_test["X"].unique()) == 1:
+            corridor = bh_test["X"].unique()[0]
+        else:
+            corridor = bh_test["X"].mode()[0]
+
+        # Loop through each space bin in the test trial
+        for space_bin in range(n_bins):
+            if space_bin not in standardized_loocv_bins.index:
+                continue  # Skip if test data does not contain this bin
+
+            # Extract the population vector for this bin
+            pop_vector = standardized_loocv_bins.xs(
+                key=corridor, level="Corridor", axis=1
+            ).loc[space_bin]
+
+            # Get the most active cells in this bin using standardized values
+            top_neurons = pop_vector.nlargest(n_neurons)
+
+            # Calculate relative activity (how much more active compared to others)
+            relative_activity = top_neurons / top_neurons.sum()
+
+            # Get corresponding activity maps from standardized templates
+            scaled_matrix = standardized_act_mtx[top_neurons.index].multiply(
+                relative_activity, axis=1, level="Neuron"
+            )
+
+            # Sum across neurons for each corridor separately
+            decoded_map = pd.DataFrame()
+            for corr in behavior["X"].unique():
+                corridor_matrix = scaled_matrix.loc[
+                    :, scaled_matrix.columns.get_level_values("Corridor") == corr
+                ]
+                decoded_map[corr] = corridor_matrix.sum(axis=1)
+
+            # Get the most active bin and its corresponding corridor
+            row_idx, col_idx = np.unravel_index(
+                decoded_map.values.argmax(), decoded_map.shape
+            )
+            decoded_bin = int(decoded_map.index[row_idx])
+            decoded_corridor = int(decoded_map.columns[col_idx])
+
+            # Store results
+            decoded_positions.append(
+                {
+                    "trial": trial,
+                    "true_corridor": corridor,
+                    "decoded_corridor": decoded_corridor,
+                    "true_bin": space_bin,
+                    "decoded_bin": decoded_bin,
+                }
+            )
+
+    return pd.DataFrame(decoded_positions)
+
+
+def proximity_weighted_accuracy(y_true, y_pred, max_distance=2):
+    """
+    Compute accuracy where predictions closer to the true bin get partial credit.
+
+    Parameters:
+        y_true (array-like): True bin labels.
+        y_pred (array-like): Predicted bin labels.
+        max_distance (int): Maximum distance for partial credit.
+
+    Returns:
+        float: Proximity-weighted accuracy score.
+    """
+    total_score = 0
+    for true, pred in zip(y_true, y_pred):
+        distance = abs(true - pred)
+        if distance <= max_distance:
+            total_score += 1 - (distance / (max_distance + 1))
+
+    return total_score / len(y_true)
+
+
+def build_keras_model(input_size, n_bins, n_corridors):
+    inputs = tf.keras.Input(shape=(input_size,))
+
+    # Shared layers
+    x = layers.Dense(128, activation="relu")(inputs)  # 128
+    x = layers.Dense(64, activation="relu")(x)  # 64
+
+    # Two separate outputs
+    bin_output = layers.Dense(n_bins, activation="softmax", name="bin_output")(x)
+    corridor_output = layers.Dense(
+        n_corridors, activation="softmax", name="corridor_output"
+    )(x)
+
+    model = models.Model(inputs=inputs, outputs=[bin_output, corridor_output])
+
+    model.compile(
+        optimizer="adam",
+        loss={
+            "bin_output": "sparse_categorical_crossentropy",
+            "corridor_output": "sparse_categorical_crossentropy",
+        },
+        metrics={"bin_output": ["accuracy"], "corridor_output": ["accuracy"]},
+    )  # Fix: Separate metrics
+
+    return model

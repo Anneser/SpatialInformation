@@ -20,16 +20,27 @@ preprocess: $(PREPROC_DIR)
 	python scripts/preprocessing.py --input $(DATA_DIR) --output $(PREPROC_DIR)
 
 # Statistical analysis
-stats: $(STATS_DIR) preprocess
+$(PREPROC_DIR)/preprocess.done:
+	python scripts/preprocessing.py --input $(DATA_DIR) --output $(PREPROC_DIR)
+	echo.> $@
+
+stats: $(STATS_DIR) $(PREPROC_DIR)/preprocess.done
 	python scripts/stats.py --input $(PREPROC_DIR) --output $(STATS_DIR)
+	echo.> $(STATS_DIR)/stats.done
 
 # Spatial decoding
-decode: $(DECODE_DIR) preprocess
+$(DECODE_DIR)/decode.done: $(PREPROC_DIR)/preprocess.done
 	python scripts/spatialdecoding.py --input $(PREPROC_DIR) --output $(DECODE_DIR)
+	echo.> $@
+
+decode: $(DECODE_DIR) $(DECODE_DIR)/decode.done
 
 # Manifold analysis
-manifold: $(MANIFOLD_DIR) preprocess
+$(MANIFOLD_DIR)/manifold.done: $(PREPROC_DIR)/preprocess.done
 	python scripts/manifold.py --input $(PREPROC_DIR) --output $(MANIFOLD_DIR)
+	echo.> $@
+
+manifold: $(MANIFOLD_DIR) $(MANIFOLD_DIR)/manifold.done
 
 # Clean all generated files
 clean:

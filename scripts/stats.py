@@ -7,12 +7,11 @@ Generates summary statistics and distributions.
 import argparse
 from pathlib import Path
 
-# import numpy as np
 import matplotlib.pyplot as plt
 import pandas as pd
-import seaborn as sns
 
 import spatialinfo.spatial_information as si
+from spatialinfo.io import save_neural_stats
 
 
 def parse_args():
@@ -30,25 +29,6 @@ def parse_args():
         help="Output directory for statistical results",
     )
     return parser.parse_args()
-
-
-def calculate_neural_stats(dff_data, behavior_data):
-    """Calculate basic statistics of neural activity."""
-    stats = {
-        "mean_activity": dff_data.mean(),
-        "std_activity": dff_data.std(),
-        "max_activity": dff_data.max(),
-        "sparseness": (dff_data > 0).mean(),
-    }
-    time_per_bin, summed_traces, _ = si.binning(dff_data, behavior_data)
-    avg_act_mtx = si.avg_activity(time_per_bin, summed_traces)
-    spatial_info, spatial_spec = si.spatial_info_calc(avg_act_mtx, time_per_bin)
-
-    spec_z_score_values = si.spec_z_score(
-        dff_data, behavior_data, n_permut=100, n_bins=30
-    )
-    pop_z_score_values = si.pop_z_score(spatial_spec)
-    return pd.DataFrame(stats), spec_z_score_values, pop_z_score_values
 
 
 def calculate_behavioral_stats(behavior_data):
@@ -74,12 +54,28 @@ def main():
             behavior_data = pd.read_pickle(session_dir / "processed_behavior.pkl")
 
             # Calculate statistics
-            neural_stats = calculate_neural_stats(dff_data, behavior_data)
-            all_neural_stats.append(neural_stats)
-
-            # Generate plots
-            plt.figure(figsize=(10, 6))
-            sns.histplot(data=dff_data.mean(), bins=50)
+            (spec_z_scores, pop_z_scores, avg_act_mtx, spatial_spec) = (
+                si.calculate_neural_stats(dff_data, behavior_data)
+            )
+            # Save results using the io module
+            save_neural_stats(
+                spec_z_scores,
+                pop_z_scores,
+                avg_act_mtx,
+                spatial_spec,
+                output_dir / f"{session_dir.name}_neural_stats.pkl",
+            )
+            # Directly append the statistics as a DataFrame or dict
+            session_stats = pd.DataFrame(
+                {
+                    "session": [session_dir.name],
+                    "spec_z_scores_mean": [spec_z_scores.mean()],
+                    "pop_z_scores_mean": [pop_z_scores.mean()],
+                    "spatial_spec_mean": [spatial_spec.mean()],
+                }
+            )
+            all_neural_stats.append(session_stats)
+            si.plot_distribution(spec_z_scores, pop_z_scores, spatial_spec)
             plt.title(f"Distribution of Mean Neural Activity - {session_dir.name}")
             plt.savefig(output_dir / f"{session_dir.name}_activity_dist.png")
             plt.close()

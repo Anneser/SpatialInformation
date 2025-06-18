@@ -271,7 +271,7 @@ def pop_z_score(spatial_spec):
     return (spatial_spec - spatial_spec.mean()) / std_dev
 
 
-def trials_over_time(dff, behavior, n_bins=30):
+def trials_over_time(dff, behavior, n_bins=30, verbose=True):
     """
     Returns a multi-index DataFrame containing the average activity per spatial bin
     per corridor per trial for each neuron.
@@ -284,6 +284,10 @@ def trials_over_time(dff, behavior, n_bins=30):
     Returns:
         DataFrame: Multi-index DataFrame with (neuron, trial, corridor, Y_bin) as index.
     """
+    # Validate input data
+    is_valid, message = validate_data(dff, behavior, verbose=verbose)
+    if not is_valid:
+        raise ValueError(f"Data validation failed: {message}")
 
     # Step 1: Extract metadata
     n_neurons = dff.shape[1]
@@ -753,3 +757,85 @@ def temporal_binning(dff, behavior, sec_per_bin=1, fps=30, only_moving=True):
     spatial_data = np.array(binned_spatial).astype(float)
 
     return activity_data, spatial_data
+
+
+def plot_distribution(spec_z_score_values, pop_z_score_values, spatial_spec):
+    """Plot the distribution of specificity and population z-scores."""
+    # Create figure and GridSpec layout
+    fig = plt.figure(figsize=(9, 3))
+    gs = fig.add_gridspec(1, 2)  # One rows, two columns
+
+    # Subplot 1 (top left)
+    ax1 = fig.add_subplot(gs[0, 0])
+    ax1.plot(spec_z_score_values, pop_z_score_values, "o")
+    ax1.axhline(y=1, color="r", linestyle="--")
+    ax1.axvline(x=1, color="r", linestyle="--")
+    ax1.set_xlabel("Specificity z-score")
+    ax1.set_ylabel("Population z-score")
+    ax1.set_title("Specificity vs. Population Z-score")
+
+    # Subplot 2 (top right)
+    ax2 = fig.add_subplot(gs[0, 1])
+    ax2.hist(spatial_spec, bins=15, color="skyblue", edgecolor="black")
+    ax2.set_xlabel("Specificity Score [bits per activity unit]")
+    ax2.set_ylabel("Number of Neurons in Bin")
+    ax2.set_title("Distribution of Specificity Scores")
+    plt.tight_layout()
+    return fig
+
+
+def calculate_neural_stats(dff_data, behavior_data):
+    """Calculate basic statistics of neural activity."""
+    time_per_bin, summed_traces, _ = binning(dff_data, behavior_data)
+    avg_act_mtx = avg_activity(time_per_bin, summed_traces)
+    _, spatial_spec = spatial_info_calc(avg_act_mtx, time_per_bin)
+
+    spec_z_score_values = spec_z_score(dff_data, behavior_data, n_permut=100, n_bins=30)
+    pop_z_score_values = pop_z_score(spatial_spec)
+    return spec_z_score_values, pop_z_score_values, avg_act_mtx, spatial_spec
+
+
+def validate_data(dff_data, behavior_data, verbose=True):
+    """
+    Validate input data for analysis functions.
+
+    Args:
+        dff_data: DataFrame containing neural activity
+        behavior_data: DataFrame containing behavioral data
+        verbose: Whether to print validation info (default: True)
+
+    Returns:
+        tuple: (is_valid, error_message)
+    """
+    if verbose:
+        print("\nData Validation:")
+        print("-" * 50)
+        print(f"DFF data shape: {dff_data.shape}")
+        print(f"Behavior data shape: {behavior_data.shape}")
+        print(f"DFF data types:\n{dff_data.dtypes}")
+        print(f"Behavior data types:\n{behavior_data.dtypes}")
+
+        # Check for NaN values
+        dff_nans = dff_data.isna().sum().sum()
+        behav_nans = behavior_data.isna().sum().sum()
+        print(f"\nNaN values in DFF data: {dff_nans}")
+        print(f"NaN values in behavior data: {behav_nans}")
+
+        # Check for infinite values
+        dff_infs = np.isinf(dff_data.astype(float).values).sum()
+        print(f"Infinite values in DFF data: {dff_infs}")
+
+    # Check for data validity
+    if dff_data.shape[0] != behavior_data.shape[0]:
+        return False, "DFF and behavior data have different numbers of samples"
+
+    if dff_nans > 0:
+        return False, f"Found {dff_nans} NaN values in DFF data"
+
+    if behav_nans > 0:
+        return False, f"Found {behav_nans} NaN values in behavior data"
+
+    if dff_infs > 0:
+        return False, f"Found {dff_infs} infinite values in DFF data"
+
+    return True, "Data validation passed"
