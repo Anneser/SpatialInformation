@@ -37,7 +37,7 @@ decode: $(DECODE_DIR) $(DECODE_DIR)/decode.done
 
 # Manifold analysis
 $(MANIFOLD_DIR)/manifold.done: $(PREPROC_DIR)/preprocess.done
-	python scripts/manifold.py --input $(PREPROC_DIR) --output $(MANIFOLD_DIR)
+	python scripts/manifold.py --input $(DATA_DIR) --output $(MANIFOLD_DIR)
 	echo.> $@
 
 manifold: $(MANIFOLD_DIR) $(MANIFOLD_DIR)/manifold.done

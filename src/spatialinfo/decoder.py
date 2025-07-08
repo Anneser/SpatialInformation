@@ -3,7 +3,7 @@ import warnings
 import numpy as np
 import pandas as pd
 import tensorflow as tf
-from tf.keras import layers, models
+from tensorflow.keras import layers, models
 
 from spatialinfo.spatial_information import avg_activity, binning
 
