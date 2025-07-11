@@ -374,9 +374,11 @@ containing 3D embedding coordinates.</p>
 </dd>
 <dt>Returns:</dt><dd><p>matplotlib.figure.Figure: The matplotlib figure object containing the plots.</p>
 </dd>
-<dt>This function creates a 1x2 grid of 3D scatter plots:</dt><dd><ul class="simple">
+<dt>This function creates a 2x2 grid of 3D scatter plots:</dt><dd><ul class="simple">
 <li><p>The first subplot colors points by binary x-position (left/right).</p></li>
 <li><p>The second subplot colors points by continuous y-position with a colorbar.</p></li>
+<li><p>The third subplot colors points by time using magma colormap.</p></li>
+<li><p>The fourth subplot colors points by trial, inferred from y-position resets.</p></li>
 </ul>
 </dd>
 </dl>
@@ -412,22 +414,13 @@ Trials with fewer than 30 timepoints are merged with the previous trial.</p>
 <span class="sig-prename descclassname"><span class="pre">spatialinfo.spatial_information.</span></span><span class="sig-name descname"><span class="pre">avg_activity</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">time_per_bin</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">summed_traces</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#spatialinfo.spatial_information.avg_activity" title="Link to this definition"></a></dt>
 <dd><p>Devides summed neural activity matrix by the occupancy matrix to obtain the average
 activity in each spatial bin.</p>
-<blockquote>
-<div><dl class="simple">
-<dt>Parameters:</dt><dd><dl class="simple">
-<dt>time_per_bin (pandas.core_frame.DataFrame): time spent in each bin,</dt><dd><p>n_bins x n_corridors</p>
+<dl class="simple">
+<dt>Args:</dt><dd><p>time_per_bin (pandas.core_frame.DataFrame): time spent in each bin, n_bins x n_corridors
+summed_traces (pandas.core.frame.DataFrame): summed activity per bin, bins x corridors x neurons</p>
 </dd>
-<dt>summed_traces (pandas.core.frame.DataFrame): summed activity for</dt><dd><p>each bin, n_bins x n_corridors x n_neurons</p>
-</dd>
-</dl>
-</dd>
-<dt>Returns:</dt><dd><dl class="simple">
-<dt>avg_activity_mtx (pandas.core_frame.DataFrame): average activity</dt><dd><p>in each spatial bin.</p>
+<dt>Returns:</dt><dd><p>avg_activity_mtx (pandas.core_frame.DataFrame): average activity in each spatial bin.</p>
 </dd>
 </dl>
-</dd>
-</dl>
-</div></blockquote>
 </dd></dl>
 
 <dl class="py function">
@@ -436,25 +429,17 @@ activity in each spatial bin.</p>
 <dd><p>Bins occupancy and activity data. Assumes that corridors have been
 completely sampled by the animal and that distinct corridors are
 characterized by X position.</p>
-<dl>
-<dt>Parameters:</dt><dd><dl class="simple">
-<dt>dff (pandas.core.frame.DataFrame): df/f calcium imaging data</dt><dd><p>(rows: time; columns: neurons)</p>
-</dd>
-<dt>behavior (pandas.core.frame.DataFrame): contains X, Y columns</dt><dd><p>with spatial information and frdIn with tail vigor</p>
-</dd>
-</dl>
-<p>n_bins (int): number of bins, defaults to 30
+<dl class="simple">
+<dt>Args:</dt><dd><p>dff (pandas.DataFrame): df/f calcium imaging data (rows: time; columns: neurons)
+behavior (pandas.DataFrame): contains X, Y columns with spatial information and frdIn with tail vigor
+n_bins (int): number of bins, defaults to 30
 n_corr (int): number of corridors, defaults to 2
 fps (int): frames per second, defaults to 30
 bins (numpy.ndarray): edges for bins can optionally be provided</p>
 </dd>
-<dt>Returns:</dt><dd><dl class="simple">
-<dt>time_per_bin (pandas.core.frame.DataFrame): time spent in each bin,</dt><dd><p>n_bins x n_corridors</p>
-</dd>
-<dt>summed_traces (pandas.core.frame.DataFrame): summed activity for each bin,</dt><dd><p>n_bins x n_corridors x n_neurons</p>
-</dd>
-</dl>
-<p>bins (numpy.ndarray or IntervalIndex): returns the computed bins</p>
+<dt>Returns:</dt><dd><p>time_per_bin (pandas.core.frame.DataFrame): time spent in each bin, n_bins x n_corridors
+summed_traces (pandas.core.frame.DataFrame): summed activity for each bin, n_bins x n_corridors x n_neurons
+bins (numpy.ndarray or IntervalIndex): returns the computed bins</p>
 </dd>
 </dl>
 </dd></dl>
@@ -472,17 +457,11 @@ bins (numpy.ndarray): edges for bins can optionally be provided</p>
 format for training a neural network.</p>
 <p>Ensures that each row represents one spatial bin (with trial &amp; corridor info),
 and columns represent neuronal activity.</p>
-<dl>
-<dt>Parameters:</dt><dd><dl class="simple">
-<dt>df (DataFrame): Multi-index DataFrame with</dt><dd><p>(neuron, trial, corridor, Y_bin) index.</p>
+<dl class="simple">
+<dt>Parameters:</dt><dd><p>df (DataFrame): Multi-index DataFrame with (neuron, trial, corridor, Y_bin) index.</p>
 </dd>
-</dl>
-</dd>
-<dt>Returns:</dt><dd><dl class="simple">
-<dt>X (ndarray): Feature matrix where each row is a neuronal activity vector</dt><dd><p>(neurons as columns).</p>
-</dd>
-</dl>
-<p>y (tuple): Tuple of target labels (bins, corridors).</p>
+<dt>Returns:</dt><dd><p>X (ndarray): Feature matrix where each row is a neuronal activity vector (neurons as columns).
+y (tuple): Tuple of target labels (bins, corridors).</p>
 </dd>
 </dl>
 </dd></dl>

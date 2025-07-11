@@ -90,19 +90,25 @@ def create_templates(
     )  # Group indices by segment
 
     # Step 2: Compute averages for each segment
-    averaged_features = np.array(
+    segment_averages = np.array(
         [dff[segment].mean(axis=0) for segment in segment_splits]
     )
 
     # Step 3: Associate with unique bin values
-    unique_bin_values = [
-        unique_bins[segment[0]] for segment in segment_splits
-    ]  # First value of each segment
+    segment_bin_values = np.array(
+        [unique_bins[segment[0]] for segment in segment_splits]
+    )  # First value of each segment
 
     if average:
-        pass  # FIXME
-
-    return averaged_features.astype(float), unique_bin_values, bin_edges
+        # Group by unique bin values and average across all segments with the same bin
+        unique_bin_values = np.unique(segment_bin_values)
+        averaged_features = np.zeros((len(unique_bin_values), dff.shape[1]))
+        for i, bin_val in enumerate(unique_bin_values):
+            matching_indices = np.where(segment_bin_values == bin_val)[0]
+            averaged_features[i, :] = segment_averages[matching_indices].mean(axis=0)
+        return averaged_features.astype(float), unique_bin_values, bin_edges
+    else:
+        return segment_averages.astype(float), segment_bin_values, bin_edges
 
 
 def match_templates(

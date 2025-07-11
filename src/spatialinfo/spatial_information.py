@@ -75,21 +75,17 @@ def binning(dff, behavior, n_bins=30, n_corr=2, fps=30, bins=None):
     completely sampled by the animal and that distinct corridors are
     characterized by X position.
 
-    Parameters:
-        dff (pandas.core.frame.DataFrame): df/f calcium imaging data
-            (rows: time; columns: neurons)
-        behavior (pandas.core.frame.DataFrame): contains X, Y columns
-            with spatial information and frdIn with tail vigor
+    Args:
+        dff (pandas.DataFrame): df/f calcium imaging data (rows: time; columns: neurons)
+        behavior (pandas.DataFrame): contains X, Y columns with spatial information and frdIn with tail vigor
         n_bins (int): number of bins, defaults to 30
         n_corr (int): number of corridors, defaults to 2
         fps (int): frames per second, defaults to 30
         bins (numpy.ndarray): edges for bins can optionally be provided
 
     Returns:
-        time_per_bin (pandas.core.frame.DataFrame): time spent in each bin,
-            n_bins x n_corridors
-        summed_traces (pandas.core.frame.DataFrame): summed activity for each bin,
-            n_bins x n_corridors x n_neurons
+        time_per_bin (pandas.core.frame.DataFrame): time spent in each bin, n_bins x n_corridors
+        summed_traces (pandas.core.frame.DataFrame): summed activity for each bin, n_bins x n_corridors x n_neurons
         bins (numpy.ndarray or IntervalIndex): returns the computed bins
     """
     if bins is None:
@@ -134,14 +130,11 @@ def avg_activity(time_per_bin, summed_traces):
     Devides summed neural activity matrix by the occupancy matrix to obtain the average
     activity in each spatial bin.
 
-            Parameters:
-                    time_per_bin (pandas.core_frame.DataFrame): time spent in each bin,
-                        n_bins x n_corridors
-                    summed_traces (pandas.core.frame.DataFrame): summed activity for
-                        each bin, n_bins x n_corridors x n_neurons
-            Returns:
-                    avg_activity_mtx (pandas.core_frame.DataFrame): average activity
-                        in each spatial bin.
+    Args:
+        time_per_bin (pandas.core_frame.DataFrame): time spent in each bin, n_bins x n_corridors
+        summed_traces (pandas.core.frame.DataFrame): summed activity per bin, bins x corridors x neurons
+    Returns:
+        avg_activity_mtx (pandas.core_frame.DataFrame): average activity in each spatial bin.
     """
     # Create an empty DataFrame with the same structure as summed_traces
     avg_activity_mtx = pd.DataFrame(
@@ -578,12 +571,10 @@ def format_for_ann(df):
     and columns represent neuronal activity.
 
     Parameters:
-        df (DataFrame): Multi-index DataFrame with
-            (neuron, trial, corridor, Y_bin) index.
+        df (DataFrame): Multi-index DataFrame with (neuron, trial, corridor, Y_bin) index.
 
     Returns:
-        X (ndarray): Feature matrix where each row is a neuronal activity vector
-            (neurons as columns).
+        X (ndarray): Feature matrix where each row is a neuronal activity vector (neurons as columns).
         y (tuple): Tuple of target labels (bins, corridors).
     """
     # Reset index so we can manipulate it
