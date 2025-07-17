@@ -132,14 +132,21 @@
 <dt class="sig sig-object py" id="spatialinfo.basis_decoder.fixed_template">
 <span class="sig-prename descclassname"><span class="pre">spatialinfo.basis_decoder.</span></span><span class="sig-name descname"><span class="pre">fixed_template</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dff</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">behavior</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_corridors</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_bins</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">30</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_neurons</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">5</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#spatialinfo.basis_decoder.fixed_template" title="Link to this definition"></a></dt>
 <dd><p>Implements direct basis decoding with LOOCV using fixed binning.</p>
-<dl class="simple">
-<dt>Parameters:</dt><dd><p>dff (pandas.DataFrame): Calcium imaging traces for all neurons.
-behavior (pandas.DataFrame): Behavioral data with X (corridor), Y (position).
-n_corridors (int): Number of corridors in the setting (default=2).
-n_bins (int): Number of spatial bins (default=30).
-n_neurons (int): Number of most active neurons to use for decoding (default=5).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>dff</strong> (<em>pandas.DataFrame</em>) – Calcium imaging traces for all neurons.</p></li>
+<li><p><strong>behavior</strong> (<em>pandas.DataFrame</em>) – Behavioral data with X (corridor), Y (position).</p></li>
+<li><p><strong>n_corridors</strong> (<em>int</em>) – Number of corridors in the setting (default=2).</p></li>
+<li><p><strong>n_bins</strong> (<em>int</em>) – Number of spatial bins (default=30).</p></li>
+<li><p><strong>n_neurons</strong> (<em>int</em>) – Number of most active neurons to use for decoding (default=5).</p></li>
+</ul>
 </dd>
-<dt>Returns:</dt><dd><p>decoded_position (pandas.DataFrame): Decoded X and Y positions.</p>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Decoded X and Y positions.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>decoded_position (pandas.DataFrame)</p>
 </dd>
 </dl>
 </dd></dl>
@@ -156,15 +163,20 @@ n_neurons (int): Number of most active neurons to use for decoding (default=5).<
 <dt class="sig sig-object py" id="spatialinfo.decoder.clean_data">
 <span class="sig-prename descclassname"><span class="pre">spatialinfo.decoder.</span></span><span class="sig-name descname"><span class="pre">clean_data</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dff</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">behavior</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#spatialinfo.decoder.clean_data" title="Link to this definition"></a></dt>
 <dd><p>Removes large downward jumps in bin values (teleport artifacts).</p>
-<dl>
-<dt>Parameters:</dt><dd><p>dff (np.ndarray): Feature matrix (time x features).
-behavior (np.ndarray): Behavior data (time x behavioral variables),</p>
-<blockquote>
-<div><p>where column 1 contains bin values.</p>
-</div></blockquote>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>dff</strong> (<em>np.ndarray</em>) – Feature matrix (time x features).</p></li>
+<li><p><strong>behavior</strong> (<em>np.ndarray</em>) – Behavior data (time x behavioral variables),
+where column 1 contains bin values.</p></li>
+</ul>
 </dd>
-<dt>Returns:</dt><dd><p>dff_clean (np.ndarray): Cleaned feature matrix.
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Cleaned feature matrix.
 behavior_clean (np.ndarray): Cleaned behavior matrix.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>dff_clean (np.ndarray)</p>
 </dd>
 </dl>
 </dd></dl>
@@ -174,31 +186,33 @@ behavior_clean (np.ndarray): Cleaned behavior matrix.</p>
 <span class="sig-prename descclassname"><span class="pre">spatialinfo.decoder.</span></span><span class="sig-name descname"><span class="pre">create_templates</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dff</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">behavior</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_bins</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">30</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">average</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#spatialinfo.decoder.create_templates" title="Link to this definition"></a></dt>
 <dd><p>Averages population activity based on positional
 information to create templates.</p>
-<dl>
-<dt>Parameters:</dt><dd><dl class="simple">
-<dt>dff (numpy.ndarray):</dt><dd><p>A 2D array of delta(f)/f calcium traces,
-with features as columns and timepoints as rows</p>
-</dd>
-<dt>bh (numpy.ndarray):</dt><dd><p>A 2D array where:
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>dff</strong> (<em>numpy.ndarray</em>) – A 2D array of delta(f)/f calcium traces,
+with features as columns and timepoints as rows</p></li>
+<li><p><strong>bh</strong> (<em>numpy.ndarray</em>) – A 2D array where:
 - column 1 contains X
 - column 2 contains Y
 - column 3 contains trial
-- rows are timepoints</p>
+- rows are timepoints</p></li>
+<li><p><strong>n_bins</strong> (<em>int</em>) – number of spatial bins to sort the data into.</p></li>
+<li><p><strong>average</strong> (<em>boolean</em>) – in case the algorithm yields templates with
+the same positional ID, return average. Defaults to False.</p></li>
+</ul>
 </dd>
-</dl>
-<p>n_bins (int): number of spatial bins to sort the data into.
-average (boolean): in case the algorithm yields templates with</p>
-<blockquote>
-<div><p>the same positional ID, return average. Defaults to False.</p>
-</div></blockquote>
-</dd>
-<dt>Returns:</dt><dd><p>templates (numpy.ndarray): each column is one template
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><p>each column is one template
 positions (numpy.ndarray): column 1: spatial bin,</p>
 <blockquote>
 <div><p>column 2: corridor,
 row: indicates template column in templates</p>
 </div></blockquote>
 <p>bins (numpy.ndarray or IntervalIndex): returns the computed bins</p>
+</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>templates (numpy.ndarray)</p>
 </dd>
 </dl>
 </dd></dl>
@@ -207,14 +221,21 @@ row: indicates template column in templates</p>
 <dt class="sig sig-object py" id="spatialinfo.decoder.fixed_template">
 <span class="sig-prename descclassname"><span class="pre">spatialinfo.decoder.</span></span><span class="sig-name descname"><span class="pre">fixed_template</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dff</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">behavior</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_bins</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">30</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_neurons</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">5</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#spatialinfo.decoder.fixed_template" title="Link to this definition"></a></dt>
 <dd><p>Implements direct basis decoding with LOOCV using fixed binning.</p>
-<dl class="simple">
-<dt>Parameters:</dt><dd><p>dff (pandas.DataFrame): Calcium imaging traces for all neurons.
-behavior (pandas.DataFrame): Behavioral data with X (corridor), Y (position).
-n_corridors (int): Number of corridors in the setting (default=2).
-n_bins (int): Number of spatial bins (default=30).
-n_neurons (int): Number of most active neurons to use for decoding (default=5).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>dff</strong> (<em>pandas.DataFrame</em>) – Calcium imaging traces for all neurons.</p></li>
+<li><p><strong>behavior</strong> (<em>pandas.DataFrame</em>) – Behavioral data with X (corridor), Y (position).</p></li>
+<li><p><strong>n_corridors</strong> (<em>int</em>) – Number of corridors in the setting (default=2).</p></li>
+<li><p><strong>n_bins</strong> (<em>int</em>) – Number of spatial bins (default=30).</p></li>
+<li><p><strong>n_neurons</strong> (<em>int</em>) – Number of most active neurons to use for decoding (default=5).</p></li>
+</ul>
 </dd>
-<dt>Returns:</dt><dd><p>decoded_position (pandas.DataFrame): Decoded X and Y positions.</p>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Decoded X and Y positions.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>decoded_position (pandas.DataFrame)</p>
 </dd>
 </dl>
 </dd></dl>
@@ -226,23 +247,33 @@ n_neurons (int): Number of most active neurons to use for decoding (default=5).<
 <p>The Mahalanobis distance is a measure of the distance between a point P and the mean
 of a distribution D, scaled by the covariance matrix.
 It represents how many standard     deviations away P is from the mean of D.</p>
-<dl>
-<dt>Parameters:</dt><dd><dl class="simple">
-<dt>y (numpy.ndarray): Point for which to calculate the Mahalanobis distance.</dt><dd><p>Should be a 1-D array.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>y</strong> (<em>numpy.ndarray</em>) – Point for which to calculate the Mahalanobis distance.
+Should be a 1-D array.</p></li>
+<li><p><strong>data</strong> (<em>numpy.ndarray</em>) – Dataset representing the distribution.</p></li>
+<li><p><strong>variables.</strong> (<em>Should be a 2-D array where rows are observations and columns are</em>)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The Mahalanobis distance between the point and the distribution.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><ul class="simple">
+<li><p><strong>numpy.linalg.LinAlgError</strong> – If the covariance matrix is singular and</p></li>
+<li><p><strong>cannot be inverted.</strong> – </p></li>
+</ul>
 </dd>
 </dl>
-<p>data (numpy.ndarray): Dataset representing the distribution.
-Should be a 2-D array where rows are observations and columns are variables.</p>
-</dd>
-<dt>Returns:</dt><dd><p>float: The Mahalanobis distance between the point and the distribution.</p>
-</dd>
-<dt>Raises:</dt><dd><p>numpy.linalg.LinAlgError: If the covariance matrix is singular and
-cannot be inverted.</p>
-</dd>
-<dt>Note:</dt><dd><p>The function assumes the data is normally distributed and the covariance matrix
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>The function assumes the data is normally distributed and the covariance matrix
 is positive definite.</p>
-</dd>
-</dl>
+</div>
 </dd></dl>
 
 <dl class="py function">
@@ -252,28 +283,26 @@ is positive definite.</p>
 <p>This function finds the most similar template to the <cite>input_vector</cite>
 using the specified <cite>distance_metric</cite> and returns the corresponding
 spatial bin and corridor.</p>
-<dl>
-<dt>Parameters:</dt><dd><dl class="simple">
-<dt>templates (numpy.ndarray):</dt><dd><p>A 2D array where each column represents a different template.</p>
-</dd>
-<dt>positions (numpy.ndarray):</dt><dd><p>A 1D array where:
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>templates</strong> (<em>numpy.ndarray</em>) – A 2D array where each column represents a different template.</p></li>
+<li><p><strong>positions</strong> (<em>numpy.ndarray</em>) – A 1D array where:
 - Column 1 contains spatial bin indices.
-- Rows correspond to the columns in <cite>templates</cite>.</p>
-</dd>
-<dt>input_vector (numpy.ndarray):</dt><dd><p>A 1D array representing the input vector to be decoded based
-on similarity to <cite>templates</cite>.</p>
-</dd>
-<dt>distance_metric (str, optional):</dt><dd><p>The metric used to determine the closest match.
+- Rows correspond to the columns in <cite>templates</cite>.</p></li>
+<li><p><strong>input_vector</strong> (<em>numpy.ndarray</em>) – A 1D array representing the input vector to be decoded based
+on similarity to <cite>templates</cite>.</p></li>
+<li><p><strong>distance_metric</strong> (<em>str</em><em>, </em><em>optional</em>) – The metric used to determine the closest match.
 Supported values are:
 - “correlation” (default)
 - “cosine”
 - “euclidean”
-- “mahalanobis”</p>
+- “mahalanobis”</p></li>
+</ul>
 </dd>
-</dl>
-</dd>
-<dt>Returns:</dt><dd><dl class="simple">
-<dt>tuple: (spatial_bin, corridor), where:</dt><dd><ul class="simple">
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><dl class="simple">
+<dt>(spatial_bin, corridor), where:</dt><dd><ul class="simple">
 <li><dl class="simple">
 <dt>spatial_bin (int): The estimated spatial bin</dt><dd><p>based on the closest template.</p>
 </dd>
@@ -283,10 +312,17 @@ Supported values are:
 </ul>
 </dd>
 </dl>
+</p>
 </dd>
-<dt>Raises:</dt><dd><p>ValueError: If an unsupported <cite>distance_metric</cite> is provided.</p>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>tuple</p>
 </dd>
-<dt>Example:</dt><dd><div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">templates</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">rand</span><span class="p">(</span><span class="mi">100</span><span class="p">,</span> <span class="mi">5</span><span class="p">)</span>  <span class="c1"># 5 templates, 100 features</span>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>ValueError</strong> – If an unsupported <cite>distance_metric</cite> is provided.</p>
+</dd>
+</dl>
+<p class="rubric">Example</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">templates</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">rand</span><span class="p">(</span><span class="mi">100</span><span class="p">,</span> <span class="mi">5</span><span class="p">)</span>  <span class="c1"># 5 templates, 100 features</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">positions</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="p">[</span><span class="mi">3</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span> <span class="p">[</span><span class="mi">4</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span> <span class="p">[</span><span class="mi">5</span><span class="p">,</span> <span class="mi">1</span><span class="p">]])</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">input_vector</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">rand</span><span class="p">(</span><span class="mi">100</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">spatial_bin</span><span class="p">,</span> <span class="n">corridor</span> <span class="o">=</span> <span class="n">match_templates</span><span class="p">(</span>
@@ -294,20 +330,25 @@ Supported values are:
 <span class="gp">... </span><span class="p">)</span>
 </pre></div>
 </div>
-</dd>
-</dl>
 </dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="spatialinfo.decoder.proximity_weighted_accuracy">
 <span class="sig-prename descclassname"><span class="pre">spatialinfo.decoder.</span></span><span class="sig-name descname"><span class="pre">proximity_weighted_accuracy</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">y_true</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y_pred</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_distance</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">2</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#spatialinfo.decoder.proximity_weighted_accuracy" title="Link to this definition"></a></dt>
 <dd><p>Compute accuracy where predictions closer to the true bin get partial credit.</p>
-<dl class="simple">
-<dt>Parameters:</dt><dd><p>y_true (array-like): True bin labels.
-y_pred (array-like): Predicted bin labels.
-max_distance (int): Maximum distance for partial credit.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>y_true</strong> (<em>array-like</em>) – True bin labels.</p></li>
+<li><p><strong>y_pred</strong> (<em>array-like</em>) – Predicted bin labels.</p></li>
+<li><p><strong>max_distance</strong> (<em>int</em>) – Maximum distance for partial credit.</p></li>
+</ul>
 </dd>
-<dt>Returns:</dt><dd><p>float: Proximity-weighted accuracy score.</p>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Proximity-weighted accuracy score.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float</p>
 </dd>
 </dl>
 </dd></dl>
@@ -322,20 +363,19 @@ obtained from <a class="reference external" href="https://github.com/PridaLab/hi
 <dt class="sig sig-object py" id="spatialinfo.dimensionality_utils.compute_abids">
 <span class="sig-prename descclassname"><span class="pre">spatialinfo.dimensionality_utils.</span></span><span class="sig-name descname"><span class="pre">compute_abids</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">arr</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_neigh</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">50</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbose</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#spatialinfo.dimensionality_utils.compute_abids" title="Link to this definition"></a></dt>
 <dd><p>Compute the Angle-Based Intrinsic Dimensionality (ABID) of a dataset.</p>
-<dl class="simple">
-<dt>Parameters:</dt><dd><dl class="simple">
-<dt>arr (numpy.ndarray):</dt><dd><p>Array of shape (n_samples, n_features) representing the data.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>arr</strong> (<em>numpy.ndarray</em>) – Array of shape (n_samples, n_features) representing the data.</p></li>
+<li><p><strong>n_neigh</strong> (<em>int</em>) – Number of nearest neighbors used for computing the structure index.</p></li>
+<li><p><strong>verbose</strong> (<em>bool</em>) – Whether to display a progress bar.</p></li>
+</ul>
 </dd>
-<dt>n_neigh (int):</dt><dd><p>Number of nearest neighbors used for computing the structure index.</p>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Estimated intrinsic dimensionality for each point in the dataset.</p>
 </dd>
-<dt>verbose (bool):</dt><dd><p>Whether to display a progress bar.</p>
-</dd>
-</dl>
-</dd>
-<dt>Returns:</dt><dd><dl class="simple">
-<dt>np.ndarray:</dt><dd><p>Estimated intrinsic dimensionality for each point in the dataset.</p>
-</dd>
-</dl>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>np.ndarray</p>
 </dd>
 </dl>
 </dd></dl>
@@ -344,20 +384,19 @@ obtained from <a class="reference external" href="https://github.com/PridaLab/hi
 <dt class="sig sig-object py" id="spatialinfo.dimensionality_utils.compute_abids_make">
 <span class="sig-prename descclassname"><span class="pre">spatialinfo.dimensionality_utils.</span></span><span class="sig-name descname"><span class="pre">compute_abids_make</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">arr</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_neigh</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">50</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbose</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#spatialinfo.dimensionality_utils.compute_abids_make" title="Link to this definition"></a></dt>
 <dd><p>Compute the Angle-Based Intrinsic Dimensionality (ABID) of a dataset.</p>
-<dl class="simple">
-<dt>Parameters:</dt><dd><dl class="simple">
-<dt>arr (numpy.ndarray):</dt><dd><p>Array of shape (n_samples, n_features) representing the data.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>arr</strong> (<em>numpy.ndarray</em>) – Array of shape (n_samples, n_features) representing the data.</p></li>
+<li><p><strong>n_neigh</strong> (<em>int</em>) – Number of nearest neighbors used for computing the structure index.</p></li>
+<li><p><strong>verbose</strong> (<em>bool</em>) – Whether to display a progress bar.</p></li>
+</ul>
 </dd>
-<dt>n_neigh (int):</dt><dd><p>Number of nearest neighbors used for computing the structure index.</p>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Estimated intrinsic dimensionality for each point in the dataset.</p>
 </dd>
-<dt>verbose (bool):</dt><dd><p>Whether to display a progress bar.</p>
-</dd>
-</dl>
-</dd>
-<dt>Returns:</dt><dd><dl class="simple">
-<dt>np.ndarray:</dt><dd><p>Estimated intrinsic dimensionality for each point in the dataset.</p>
-</dd>
-</dl>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>np.ndarray</p>
 </dd>
 </dl>
 </dd></dl>
@@ -366,17 +405,28 @@ obtained from <a class="reference external" href="https://github.com/PridaLab/hi
 <dt class="sig sig-object py" id="spatialinfo.dimensionality_utils.plot_manifold">
 <span class="sig-prename descclassname"><span class="pre">spatialinfo.dimensionality_utils.</span></span><span class="sig-name descname"><span class="pre">plot_manifold</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">spatial_data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">concat_emb</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#spatialinfo.dimensionality_utils.plot_manifold" title="Link to this definition"></a></dt>
 <dd><p>Visualize the manifold embedding with spatial color coding.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>spatial_data</strong> (<em>np.ndarray</em>) – Array of shape (n_samples, 2)</p></li>
+<li><p><strong>coordinates</strong> (<em>containing spatial</em>)</p></li>
+<li><p><strong>concat_emb</strong> (<em>np.ndarray</em>) – Array of shape (n_samples, 3)</p></li>
+<li><p><strong>coordinates.</strong> (<em>containing 3D embedding</em>)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The matplotlib figure object containing the plots.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>matplotlib.figure.Figure</p>
+</dd>
+</dl>
 <dl class="simple">
-<dt>Args:</dt><dd><p>spatial_data (np.ndarray): Array of shape (n_samples, 2)
-containing spatial coordinates (x, y).
-concat_emb (np.ndarray): Array of shape (n_samples, 3)
-containing 3D embedding coordinates.</p>
-</dd>
-<dt>Returns:</dt><dd><p>matplotlib.figure.Figure: The matplotlib figure object containing the plots.</p>
-</dd>
-<dt>This function creates a 1x2 grid of 3D scatter plots:</dt><dd><ul class="simple">
+<dt>This function creates a 2x2 grid of 3D scatter plots:</dt><dd><ul class="simple">
 <li><p>The first subplot colors points by binary x-position (left/right).</p></li>
 <li><p>The second subplot colors points by continuous y-position with a colorbar.</p></li>
+<li><p>The third subplot colors points by time using magma colormap.</p></li>
+<li><p>The fourth subplot colors points by trial, inferred from y-position resets.</p></li>
 </ul>
 </dd>
 </dl>
@@ -396,13 +446,16 @@ containing 3D embedding coordinates.</p>
 </div></blockquote>
 <p>2. The corridor changes (X-position changes).
 Trials with fewer than 30 timepoints are merged with the previous trial.</p>
-<dl class="simple">
-<dt>Parameters:</dt><dd><dl class="simple">
-<dt>behavior (DataFrame): Must contain ‘X’ (corridor) and ‘Y’</dt><dd><p>(position in corridor).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>behavior</strong> (<em>DataFrame</em>) – Must contain ‘X’ (corridor) and ‘Y’
+(position in corridor).</p>
 </dd>
-</dl>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Updated DataFrame with a new ‘trial’ column.</p>
 </dd>
-<dt>Returns:</dt><dd><p>behavior (DataFrame): Updated DataFrame with a new ‘trial’ column.</p>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>behavior (DataFrame)</p>
 </dd>
 </dl>
 </dd></dl>
@@ -412,22 +465,20 @@ Trials with fewer than 30 timepoints are merged with the previous trial.</p>
 <span class="sig-prename descclassname"><span class="pre">spatialinfo.spatial_information.</span></span><span class="sig-name descname"><span class="pre">avg_activity</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">time_per_bin</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">summed_traces</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#spatialinfo.spatial_information.avg_activity" title="Link to this definition"></a></dt>
 <dd><p>Devides summed neural activity matrix by the occupancy matrix to obtain the average
 activity in each spatial bin.</p>
-<blockquote>
-<div><dl class="simple">
-<dt>Parameters:</dt><dd><dl class="simple">
-<dt>time_per_bin (pandas.core_frame.DataFrame): time spent in each bin,</dt><dd><p>n_bins x n_corridors</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>time_per_bin</strong> (<em>pandas.core_frame.DataFrame</em>) – time spent in each bin, n_bins x n_corridors</p></li>
+<li><p><strong>summed_traces</strong> (<em>pandas.core.frame.DataFrame</em>) – summed activity per bin, bins x corridors x neurons</p></li>
+</ul>
 </dd>
-<dt>summed_traces (pandas.core.frame.DataFrame): summed activity for</dt><dd><p>each bin, n_bins x n_corridors x n_neurons</p>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>average activity in each spatial bin.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>avg_activity_mtx (pandas.core_frame.DataFrame)</p>
 </dd>
 </dl>
-</dd>
-<dt>Returns:</dt><dd><dl class="simple">
-<dt>avg_activity_mtx (pandas.core_frame.DataFrame): average activity</dt><dd><p>in each spatial bin.</p>
-</dd>
-</dl>
-</dd>
-</dl>
-</div></blockquote>
 </dd></dl>
 
 <dl class="py function">
@@ -436,25 +487,24 @@ activity in each spatial bin.</p>
 <dd><p>Bins occupancy and activity data. Assumes that corridors have been
 completely sampled by the animal and that distinct corridors are
 characterized by X position.</p>
-<dl>
-<dt>Parameters:</dt><dd><dl class="simple">
-<dt>dff (pandas.core.frame.DataFrame): df/f calcium imaging data</dt><dd><p>(rows: time; columns: neurons)</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>dff</strong> (<em>pandas.DataFrame</em>) – df/f calcium imaging data (rows: time; columns: neurons)</p></li>
+<li><p><strong>behavior</strong> (<em>pandas.DataFrame</em>) – contains X, Y columns with spatial information and frdIn with tail vigor</p></li>
+<li><p><strong>n_bins</strong> (<em>int</em>) – number of bins, defaults to 30</p></li>
+<li><p><strong>n_corr</strong> (<em>int</em>) – number of corridors, defaults to 2</p></li>
+<li><p><strong>fps</strong> (<em>int</em>) – frames per second, defaults to 30</p></li>
+<li><p><strong>bins</strong> (<em>numpy.ndarray</em>) – edges for bins can optionally be provided</p></li>
+</ul>
 </dd>
-<dt>behavior (pandas.core.frame.DataFrame): contains X, Y columns</dt><dd><p>with spatial information and frdIn with tail vigor</p>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>time spent in each bin, n_bins x n_corridors
+summed_traces (pandas.core.frame.DataFrame): summed activity for each bin, n_bins x n_corridors x n_neurons
+bins (numpy.ndarray or IntervalIndex): returns the computed bins</p>
 </dd>
-</dl>
-<p>n_bins (int): number of bins, defaults to 30
-n_corr (int): number of corridors, defaults to 2
-fps (int): frames per second, defaults to 30
-bins (numpy.ndarray): edges for bins can optionally be provided</p>
-</dd>
-<dt>Returns:</dt><dd><dl class="simple">
-<dt>time_per_bin (pandas.core.frame.DataFrame): time spent in each bin,</dt><dd><p>n_bins x n_corridors</p>
-</dd>
-<dt>summed_traces (pandas.core.frame.DataFrame): summed activity for each bin,</dt><dd><p>n_bins x n_corridors x n_neurons</p>
-</dd>
-</dl>
-<p>bins (numpy.ndarray or IntervalIndex): returns the computed bins</p>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>time_per_bin (pandas.core.frame.DataFrame)</p>
 </dd>
 </dl>
 </dd></dl>
@@ -472,17 +522,16 @@ bins (numpy.ndarray): edges for bins can optionally be provided</p>
 format for training a neural network.</p>
 <p>Ensures that each row represents one spatial bin (with trial &amp; corridor info),
 and columns represent neuronal activity.</p>
-<dl>
-<dt>Parameters:</dt><dd><dl class="simple">
-<dt>df (DataFrame): Multi-index DataFrame with</dt><dd><p>(neuron, trial, corridor, Y_bin) index.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>df</strong> (<em>DataFrame</em>) – Multi-index DataFrame with (neuron, trial, corridor, Y_bin) index.</p>
 </dd>
-</dl>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Feature matrix where each row is a neuronal activity vector (neurons as columns).
+y (tuple): Tuple of target labels (bins, corridors).</p>
 </dd>
-<dt>Returns:</dt><dd><dl class="simple">
-<dt>X (ndarray): Feature matrix where each row is a neuronal activity vector</dt><dd><p>(neurons as columns).</p>
-</dd>
-</dl>
-<p>y (tuple): Tuple of target labels (bins, corridors).</p>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>X (ndarray)</p>
 </dd>
 </dl>
 </dd></dl>
@@ -499,17 +548,23 @@ and columns represent neuronal activity.</p>
 <p>This function searches the specified directory for files ending in
 ‘<a href="#id1"><span class="problematic" id="id2">*</span></a>dff.pkl’ and ‘<a href="#id3"><span class="problematic" id="id4">*</span></a>behavior.pkl’, loads them as pandas DataFrames,
 and returns them.</p>
-<dl class="simple">
-<dt>Parameters:</dt><dd><p>file_path (Path): Path to the directory containing the .pkl files.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>file_path</strong> (<em>Path</em>) – Path to the directory containing the .pkl files.</p>
 </dd>
-<dt>Returns:</dt><dd><dl class="simple">
-<dt>tuple: A tuple containing:</dt><dd><ul class="simple">
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><dl class="simple">
+<dt>A tuple containing:</dt><dd><ul class="simple">
 <li><p>dff (pd.DataFrame): DataFrame with neuronal activity (e.g., ΔF/F traces).</p></li>
 <li><p>behavior (pd.DataFrame): DataFrame with behavioral data
 (e.g., positions, timestamps).</p></li>
 </ul>
 </dd>
 </dl>
+</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>tuple</p>
 </dd>
 </dl>
 </dd></dl>
@@ -519,19 +574,25 @@ and returns them.</p>
 <span class="sig-prename descclassname"><span class="pre">spatialinfo.spatial_information.</span></span><span class="sig-name descname"><span class="pre">place_field_size</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">avg_activity_mtx</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">neuron_ID</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_bins</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">30</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">chamber_size</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">150</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#spatialinfo.spatial_information.place_field_size" title="Link to this definition"></a></dt>
 <dd><p>Calculates the place fields of bona fide place cells and returns their center of
 mass as well as their size.</p>
-<dl>
-<dt>Parameters:</dt><dd><dl class="simple">
-<dt>avg_activity_mtx (DataFrame): Average activity in each spatial bin</dt><dd><p>(MultiIndex: Neuron, Corridor).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>avg_activity_mtx</strong> (<em>DataFrame</em>) – Average activity in each spatial bin
+(MultiIndex: Neuron, Corridor).</p></li>
+<li><p><strong>neuron_ID</strong> (<em>array</em>) – List of bona fide place cells to be used for indexing.</p></li>
+<li><p><strong>n_bins</strong> (<em>int</em>) – Number of spatial bins (default: 30).</p></li>
+<li><p><strong>chamber_size</strong> (<em>int</em>) – Size of the chamber in VR units (default: 150).</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><dl class="simple">
+<dt>List of dictionaries with the size and</dt><dd><p>center of mass of the place fields for each neuron.</p>
 </dd>
 </dl>
-<p>neuron_ID (array): List of bona fide place cells to be used for indexing.
-n_bins (int): Number of spatial bins (default: 30).
-chamber_size (int): Size of the chamber in VR units (default: 150).</p>
+</p>
 </dd>
-<dt>Returns:</dt><dd><dl class="simple">
-<dt>pf_list (list of dicts): List of dictionaries with the size and</dt><dd><p>center of mass of the place fields for each neuron.</p>
-</dd>
-</dl>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>pf_list (list of dicts)</p>
 </dd>
 </dl>
 </dd></dl>
@@ -550,16 +611,18 @@ with three subplots:
 1. Spatial specificity
 2. Specificity Z-score
 3. Population Z-score</p>
-<dl>
-<dt>Parameters:</dt><dd><p>file_path (Path): path to the folder containing all files for a given dataset.
-neuron_index (array): list of indices for place cells.
-spec_df (DataFrame): DataFrame with columns “spatial_specificity”,</p>
-<blockquote>
-<div><p>“specificity_zscore”, and “population_zscore”.</p>
-</div></blockquote>
-<p>save_figure (boolean): Whether the figure should just be printed or also saved.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>file_path</strong> (<em>Path</em>) – path to the folder containing all files for a given dataset.</p></li>
+<li><p><strong>neuron_index</strong> (<em>array</em>) – list of indices for place cells.</p></li>
+<li><p><strong>spec_df</strong> (<em>DataFrame</em>) – DataFrame with columns “spatial_specificity”,
+“specificity_zscore”, and “population_zscore”.</p></li>
+<li><p><strong>save_figure</strong> (<em>boolean</em>) – Whether the figure should just be printed or also saved.</p></li>
+</ul>
 </dd>
-<dt>Returns:</dt><dd><p>None</p>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>None</p>
 </dd>
 </dl>
 </dd></dl>
@@ -571,16 +634,20 @@ spec_df (DataFrame): DataFrame with columns “spatial_specificity”,</p>
 <p>This function normalizes a pandas Series by subtracting the mean
 and dividing by the standard deviation across the entire population.
 If the standard deviation is zero, returns NaNs to avoid division by zero.</p>
-<dl class="simple">
-<dt>Args:</dt><dd><dl class="simple">
-<dt>spatial_spec (pd.Series): A Series representing spatial tuning</dt><dd><p>for a single neuron or condition.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>spatial_spec</strong> (<em>pd.Series</em>) – A Series representing spatial tuning
+for a single neuron or condition.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><dl class="simple">
+<dt>Z-scored values of the input Series. If the standard</dt><dd><p>deviation is zero, returns a Series of NaNs.</p>
 </dd>
 </dl>
+</p>
 </dd>
-<dt>Returns:</dt><dd><dl class="simple">
-<dt>pd.Series: Z-scored values of the input Series. If the standard</dt><dd><p>deviation is zero, returns a Series of NaNs.</p>
-</dd>
-</dl>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>pd.Series</p>
 </dd>
 </dl>
 </dd></dl>
@@ -589,12 +656,19 @@ If the standard deviation is zero, returns NaNs to avoid division by zero.</p>
 <dt class="sig sig-object py" id="spatialinfo.spatial_information.proximity_weighted_accuracy">
 <span class="sig-prename descclassname"><span class="pre">spatialinfo.spatial_information.</span></span><span class="sig-name descname"><span class="pre">proximity_weighted_accuracy</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">y_true</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y_pred</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_distance</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">2</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#spatialinfo.spatial_information.proximity_weighted_accuracy" title="Link to this definition"></a></dt>
 <dd><p>Compute accuracy where predictions closer to the true bin get partial credit.</p>
-<dl class="simple">
-<dt>Parameters:</dt><dd><p>y_true (array-like): True bin labels.
-y_pred (array-like): Predicted bin labels.
-max_distance (int): Maximum distance for partial credit.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>y_true</strong> (<em>array-like</em>) – True bin labels.</p></li>
+<li><p><strong>y_pred</strong> (<em>array-like</em>) – Predicted bin labels.</p></li>
+<li><p><strong>max_distance</strong> (<em>int</em>) – Maximum distance for partial credit.</p></li>
+</ul>
 </dd>
-<dt>Returns:</dt><dd><p>float: Proximity-weighted accuracy score.</p>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Proximity-weighted accuracy score.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float</p>
 </dd>
 </dl>
 </dd></dl>
@@ -604,17 +678,23 @@ max_distance (int): Maximum distance for partial credit.</p>
 <span class="sig-prename descclassname"><span class="pre">spatialinfo.spatial_information.</span></span><span class="sig-name descname"><span class="pre">remove_interpolated_values</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">behavior</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_corr</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">2</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#spatialinfo.spatial_information.remove_interpolated_values" title="Link to this definition"></a></dt>
 <dd><p>Cleans up interpolated X values by reassigning them to the nearest valid corridor
 value in time order.</p>
-<dl>
-<dt>Parameters:</dt><dd><dl class="simple">
-<dt>behavior (pandas.core.frame.DataFrame): contains X,</dt><dd><p>Y columns with spatial information</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>behavior</strong> (<em>pandas.core.frame.DataFrame</em>) – contains X,
+Y columns with spatial information</p></li>
+<li><p><strong>n_corr</strong> (<em>int</em>) – number of corridors to consider (defaults to 2)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><dl class="simple">
+<dt>cleaned behavior data with</dt><dd><p>X values reassigned</p>
 </dd>
 </dl>
-<p>n_corr (int): number of corridors to consider (defaults to 2)</p>
+</p>
 </dd>
-<dt>Returns:</dt><dd><dl class="simple">
-<dt>behavior (pandas.core.frame.DataFrame): cleaned behavior data with</dt><dd><p>X values reassigned</p>
-</dd>
-</dl>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>behavior (pandas.core.frame.DataFrame)</p>
 </dd>
 </dl>
 </dd></dl>
@@ -651,15 +731,22 @@ spatial bins and occupancy probability.</p>
 From this shifted data, a null distribution of specificity scores is computed.
 The specificity z-score is then calculated by subtracting the mean of this
 distribution and dividing by its standard deviation.</p>
-<dl class="simple">
-<dt>Parameters:</dt><dd><p>dff (DataFrame): dF/F activity data.
-behavior (DataFrame): Behavioral data to be shifted.
-sampling_rate (int): Sampling rate of the data (default: 30).
-n_permut (int): Number of permutations (default: 1000).
-n_bins (int): Number of spatial bins (default: 10).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>dff</strong> (<em>DataFrame</em>) – dF/F activity data.</p></li>
+<li><p><strong>behavior</strong> (<em>DataFrame</em>) – Behavioral data to be shifted.</p></li>
+<li><p><strong>sampling_rate</strong> (<em>int</em>) – Sampling rate of the data (default: 30).</p></li>
+<li><p><strong>n_permut</strong> (<em>int</em>) – Number of permutations (default: 1000).</p></li>
+<li><p><strong>n_bins</strong> (<em>int</em>) – Number of spatial bins (default: 10).</p></li>
+</ul>
 </dd>
-<dt>Returns:</dt><dd><p>actual_spatial_spec (float): Actual specificity score.
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Actual specificity score.
 shifted_spec (list): List of specificity scores from permuted data.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>actual_spatial_spec (float)</p>
 </dd>
 </dl>
 </dd></dl>
@@ -670,27 +757,31 @@ shifted_spec (list): List of specificity scores from permuted data.</p>
 <dd><p>Bins occupancy and activity data into temporal bins.
 Assumes that distinct corridors are characterized by X position and
 that a trial column exists in behavior</p>
-<dl>
-<dt>Parameters:</dt><dd><dl class="simple">
-<dt>dff (pandas.core.frame.DataFrame): df/f calcium imaging data</dt><dd><p>(rows: time; columns: neurons)</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>dff</strong> (<em>pandas.core.frame.DataFrame</em>) – df/f calcium imaging data
+(rows: time; columns: neurons)</p></li>
+<li><p><strong>behavior</strong> (<em>pandas.core.frame.DataFrame</em>) – contains X, Y columns with
+spatial information, trial column and frdIn with tail vigor</p></li>
+<li><p><strong>sec_per_bin</strong> (<em>int</em>) – how many seconds will be averaged into one bin,
+defaults to 1.</p></li>
+<li><p><strong>fps</strong> (<em>int</em>) – recording speed in frames per second, defaults to 30</p></li>
+<li><p><strong>only_moving</strong> (<em>bool</em>) – removing frames in which the animal is not moving,
+defaults to True.</p></li>
+</ul>
 </dd>
-<dt>behavior (pandas.core.frame.DataFrame): contains X, Y columns with</dt><dd><p>spatial information, trial column and frdIn with tail vigor</p>
-</dd>
-<dt>sec_per_bin (int): how many seconds will be averaged into one bin,</dt><dd><p>defaults to 1.</p>
-</dd>
-</dl>
-<p>fps (int): recording speed in frames per second, defaults to 30
-only_moving (bool): removing frames in which the animal is not moving,</p>
-<blockquote>
-<div><p>defaults to True.</p>
-</div></blockquote>
-</dd>
-<dt>Returns:</dt><dd><dl class="simple">
-<dt>activity_data (np.ndarray): activity matrix after binning,</dt><dd><p>columns = features, rows = bins</p>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><dl class="simple">
+<dt>activity matrix after binning,</dt><dd><p>columns = features, rows = bins</p>
 </dd>
 <dt>spatial_data (np.ndarray): average position of animal during each bin,</dt><dd><p>columns = X, Y, rows = bins</p>
 </dd>
 </dl>
+</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>activity_data (np.ndarray)</p>
 </dd>
 </dl>
 </dd></dl>
@@ -700,12 +791,19 @@ only_moving (bool): removing frames in which the animal is not moving,</p>
 <span class="sig-prename descclassname"><span class="pre">spatialinfo.spatial_information.</span></span><span class="sig-name descname"><span class="pre">trials_over_time</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dff</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">behavior</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_bins</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">30</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbose</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#spatialinfo.spatial_information.trials_over_time" title="Link to this definition"></a></dt>
 <dd><p>Returns a multi-index DataFrame containing the average activity per spatial bin
 per corridor per trial for each neuron.</p>
-<dl class="simple">
-<dt>Parameters:</dt><dd><p>dff (DataFrame): dF/F activity data in timepoints (rows) x neurons (columns).
-behavior (DataFrame): Behavioral data in timepoints (rows) x behavior (column).
-n_bins (int): Number of spatial bins to divide the Y-position.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>dff</strong> (<em>DataFrame</em>) – dF/F activity data in timepoints (rows) x neurons (columns).</p></li>
+<li><p><strong>behavior</strong> (<em>DataFrame</em>) – Behavioral data in timepoints (rows) x behavior (column).</p></li>
+<li><p><strong>n_bins</strong> (<em>int</em>) – Number of spatial bins to divide the Y-position.</p></li>
+</ul>
 </dd>
-<dt>Returns:</dt><dd><p>DataFrame: Multi-index DataFrame with (neuron, trial, corridor, Y_bin) as index.</p>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Multi-index DataFrame with (neuron, trial, corridor, Y_bin) as index.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>DataFrame</p>
 </dd>
 </dl>
 </dd></dl>
@@ -716,16 +814,17 @@ n_bins (int): Number of spatial bins to divide the Y-position.</p>
 <dd><p>For any given neuron ID, this plots the activity per spatial bin per corridor
 per trial in two heatmaps with shared color scales and consistent x-axis
 (spatial bins).</p>
-<dl>
-<dt>Parameters:</dt><dd><p>neuron_ID (int): column number of neuron in dff.
-dff (DataFrame): dF/F activity data in timepoints (rows) x neurons (columns).
-behavior (DataFrame): Behavioral data in timepoints (rows) x behavior (column).
-n_bins (int): number of spatial bins to plot (defaults to 10).
-export_figure (boolean): defines whether plot should be saved</p>
-<blockquote>
-<div><p>(defaults to False).</p>
-</div></blockquote>
-<p>cmap (str): defines colormap, defaults to “magma”.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>neuron_ID</strong> (<em>int</em>) – column number of neuron in dff.</p></li>
+<li><p><strong>dff</strong> (<em>DataFrame</em>) – dF/F activity data in timepoints (rows) x neurons (columns).</p></li>
+<li><p><strong>behavior</strong> (<em>DataFrame</em>) – Behavioral data in timepoints (rows) x behavior (column).</p></li>
+<li><p><strong>n_bins</strong> (<em>int</em>) – number of spatial bins to plot (defaults to 10).</p></li>
+<li><p><strong>export_figure</strong> (<em>boolean</em>) – defines whether plot should be saved
+(defaults to False).</p></li>
+<li><p><strong>cmap</strong> (<em>str</em>) – defines colormap, defaults to “magma”.</p></li>
+</ul>
 </dd>
 </dl>
 </dd></dl>
@@ -734,12 +833,19 @@ export_figure (boolean): defines whether plot should be saved</p>
 <dt class="sig sig-object py" id="spatialinfo.spatial_information.validate_data">
 <span class="sig-prename descclassname"><span class="pre">spatialinfo.spatial_information.</span></span><span class="sig-name descname"><span class="pre">validate_data</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dff_data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">behavior_data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbose</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#spatialinfo.spatial_information.validate_data" title="Link to this definition"></a></dt>
 <dd><p>Validate input data for analysis functions.</p>
-<dl class="simple">
-<dt>Args:</dt><dd><p>dff_data: DataFrame containing neural activity
-behavior_data: DataFrame containing behavioral data
-verbose: Whether to print validation info (default: True)</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>dff_data</strong> – DataFrame containing neural activity</p></li>
+<li><p><strong>behavior_data</strong> – DataFrame containing behavioral data</p></li>
+<li><p><strong>verbose</strong> – Whether to print validation info (default: True)</p></li>
+</ul>
 </dd>
-<dt>Returns:</dt><dd><p>tuple: (is_valid, error_message)</p>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>(is_valid, error_message)</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>tuple</p>
 </dd>
 </dl>
 </dd></dl>
