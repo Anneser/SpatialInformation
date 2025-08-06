@@ -88,6 +88,16 @@ def binning(dff, behavior, n_bins=30, n_corr=2, fps=30, bins=None):
         summed_traces (pandas.core.frame.DataFrame): summed activity for each bin, n_bins x n_corridors x n_neurons
         bins (numpy.ndarray or IntervalIndex): returns the computed bins
     """
+    # Standardize column names
+    behavior = behavior.copy()
+    col_map = {}
+    if "xpos" in behavior.columns and "X" not in behavior.columns:
+        col_map["xpos"] = "X"
+    if "ypos" in behavior.columns and "Y" not in behavior.columns:
+        col_map["ypos"] = "Y"
+    if col_map:
+        behavior.rename(columns=col_map, inplace=True)
+
     if bins is None:
         # Create bin labels, cut the Y positions into bins and X into corridor values.
         behavior.loc[:, "Y_bin"], bins = pd.cut(
@@ -423,6 +433,86 @@ def trials_over_time_figure(
     if export_figure:
         plt.savefig(f"neuron_{neuron_ID}_plot.svg")
     plt.show()
+
+
+def average_trace_figure(neuron_ID, dff, behavior, n_bins=200, export_figure=False):
+    """
+    For any given neuron ID, this plots the activity per spatial bin per corridor
+    for each trial as grey lines and overlays the average trace in red.
+
+    Parameters:
+        neuron_ID (int): column number of neuron in dff.
+        dff (DataFrame): dF/F activity data in timepoints (rows) x neurons (columns).
+        behavior (DataFrame): Behavioral data in timepoints (rows) x behavior (columns).
+        n_bins (int): number of spatial bins to plot (defaults to 10).
+        export_figure (boolean): defines whether plot should be saved (defaults to False).
+
+    """
+
+    # Extract neuron activity
+    neuron_activity = dff.iloc[:, neuron_ID]
+
+    # Bin the Y-position
+    behavior = behavior.copy()
+    behavior["Y_bin"] = pd.cut(behavior["Y"], bins=n_bins, labels=False)
+
+    # Get unique trials and corridors
+    trials = behavior["trial"].unique()
+    corridors = behavior["X"].unique()
+
+    # Create a dictionary to store binned activity
+    binned_activity = {corridor: [] for corridor in corridors}
+
+    for trial in trials:
+        trial_data = behavior[behavior["trial"] == trial]
+        trial_activity = neuron_activity.loc[trial_data.index]
+
+        for corridor in corridors:
+            corridor_data = trial_data[trial_data["X"] == corridor]
+            corridor_activity = trial_activity.loc[corridor_data.index]
+
+            # Bin the activity by spatial bins
+            avg_activity_per_bin = corridor_activity.groupby(
+                corridor_data["Y_bin"]
+            ).mean()
+
+            # Ensure all bins are present
+            avg_activity_per_bin = avg_activity_per_bin.reindex(
+                range(n_bins), fill_value=np.nan
+            )
+            binned_activity[corridor].append(avg_activity_per_bin)
+
+    # Plotting
+    fig, axes = plt.subplots(1, 2, figsize=(14, 5), sharey=True)
+
+    for i, corridor in enumerate(corridors):
+        trial_traces = pd.DataFrame(binned_activity[corridor])
+
+        # Plot individual trials in grey
+        for _, row in trial_traces.iterrows():
+            axes[i].plot(row.index, row.values, color="lightgrey", linewidth=1)
+
+        # Plot average trace in red
+        median_trace = trial_traces.median(skipna=True)
+        axes[i].plot(median_trace.index, median_trace.values, color="red", linewidth=3)
+
+        axes[i].set_title(f"Corridor {corridor}")
+        axes[i].set_xlabel("Spatial Bin")
+        if i == 0:
+            axes[i].set_ylabel("dF/F Activity")
+
+        # Limit number of xticks to avoid crowding
+        max_xticks = 9
+        xticks = np.linspace(0, n_bins - 1, num=min(n_bins, max_xticks), dtype=int)
+        axes[i].set_xticks(xticks)
+        axes[i].set_xticklabels(xticks)
+
+    plt.tight_layout()
+    if export_figure:
+        plt.savefig(f"neuron_{neuron_ID}_avg_trace.svg")
+    plt.show()
+
+    return binned_activity
 
 
 def add_trial_column(behavior):
