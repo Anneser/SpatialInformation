@@ -1,5 +1,6 @@
 import math
 import warnings
+from itertools import cycle
 from pathlib import Path
 
 import matplotlib.pyplot as plt
@@ -7,6 +8,7 @@ import numpy as np
 import pandas as pd
 import seaborn as sns
 from PIL import Image
+from scipy import stats
 from sklearn.preprocessing import MinMaxScaler
 
 # from sklearn.model_selection import train_test_split
@@ -435,73 +437,103 @@ def trials_over_time_figure(
     plt.show()
 
 
-def average_trace_figure(neuron_ID, dff, behavior, n_bins=200, export_figure=False):
+def average_trace_figure(
+    neuron_ID,
+    dff,
+    behavior,
+    n_bins=200,
+    traces=True,
+    conf_95=False,
+    export_figure=False,
+):
     """
-    For any given neuron ID, this plots the activity per spatial bin per corridor
-    for each trial as grey lines and overlays the average trace in red.
+    For a given neuron ID, plot activity per spatial bin per corridor.
+    Grey lines = per-trial binned traces, red = mean trace. Optional 95% t-CI ribbon.
 
     Parameters:
         neuron_ID (int): column number of neuron in dff.
-        dff (DataFrame): dF/F activity data in timepoints (rows) x neurons (columns).
-        behavior (DataFrame): Behavioral data in timepoints (rows) x behavior (columns).
-        n_bins (int): number of spatial bins to plot (defaults to 10).
-        export_figure (boolean): defines whether plot should be saved (defaults to False).
-
+        dff (DataFrame): dF/F activity data [timepoints x neurons].
+        behavior (DataFrame): Behavioral data [timepoints x columns incl. 'X','Y','trial'].
+        n_bins (int): number of spatial bins (default 200).
+        traces (bool): plot individual trial traces (default True).
+        conf_95 (bool): add 95% confidence interval around the mean (default False).
+        export_figure (bool): save SVG figure (default False).
     """
 
-    # Extract neuron activity
+    # --- Extract neuron activity and bin positions ---
     neuron_activity = dff.iloc[:, neuron_ID]
-
-    # Bin the Y-position
     behavior = behavior.copy()
     behavior["Y_bin"] = pd.cut(behavior["Y"], bins=n_bins, labels=False)
 
-    # Get unique trials and corridors
-    trials = behavior["trial"].unique()
-    corridors = behavior["X"].unique()
+    # Order corridors for stable plotting
+    corridors = np.sort(behavior["X"].dropna().unique())
 
-    # Create a dictionary to store binned activity
+    # Collect binned activity per corridor, per trial
     binned_activity = {corridor: [] for corridor in corridors}
-
-    for trial in trials:
-        trial_data = behavior[behavior["trial"] == trial]
-        trial_activity = neuron_activity.loc[trial_data.index]
+    for trial in behavior["trial"].dropna().unique():
+        trial_rows = behavior["trial"] == trial
 
         for corridor in corridors:
-            corridor_data = trial_data[trial_data["X"] == corridor]
-            corridor_activity = trial_activity.loc[corridor_data.index]
+            sel = trial_rows & (behavior["X"] == corridor)
+            if not sel.any():
+                continue
+            bins_this = behavior.loc[sel, "Y_bin"]
+            act_this = neuron_activity.loc[sel]
 
-            # Bin the activity by spatial bins
-            avg_activity_per_bin = corridor_activity.groupby(
-                corridor_data["Y_bin"]
-            ).mean()
+            # mean activity per spatial bin for this trial
+            avg_per_bin = act_this.groupby(bins_this).mean()
+            avg_per_bin = avg_per_bin.reindex(range(n_bins), fill_value=np.nan)
+            binned_activity[corridor].append(avg_per_bin)
 
-            # Ensure all bins are present
-            avg_activity_per_bin = avg_activity_per_bin.reindex(
-                range(n_bins), fill_value=np.nan
-            )
-            binned_activity[corridor].append(avg_activity_per_bin)
+    # --- Plotting ---
+    n_corr = len(corridors)
+    fig, axes = plt.subplots(1, n_corr, figsize=(7 * n_corr, 5), sharey=True)
+    if n_corr == 1:
+        axes = [axes]  # make iterable
 
-    # Plotting
-    fig, axes = plt.subplots(1, 2, figsize=(14, 5), sharey=True)
+    x = np.arange(n_bins)
 
     for i, corridor in enumerate(corridors):
-        trial_traces = pd.DataFrame(binned_activity[corridor])
+        if len(binned_activity[corridor]) == 0:
+            axes[i].set_title(f"Corridor {corridor} (no data)")
+            continue
 
-        # Plot individual trials in grey
-        for _, row in trial_traces.iterrows():
-            axes[i].plot(row.index, row.values, color="lightgrey", linewidth=1)
+        trial_traces = pd.DataFrame(binned_activity[corridor])  # rows=trials, cols=bins
 
-        # Plot average trace in red
-        median_trace = trial_traces.median(skipna=True)
-        axes[i].plot(median_trace.index, median_trace.values, color="red", linewidth=3)
+        # Center = MEAN (pairs correctly with SEM/CI)
+        mean_trace = trial_traces.mean(axis=0, skipna=True)
+
+        if conf_95:
+            # Per-bin counts (n), SD, SEM
+            counts = trial_traces.count(axis=0)  # non-NaN per bin
+            sd = trial_traces.std(axis=0, ddof=1, skipna=True)
+            sem = sd / np.sqrt(counts)
+
+            # t critical per bin: df = n-1; where n<2, CI undefined (mask to NaN)
+            df = counts - 1
+            with np.errstate(invalid="ignore"):
+                tcrit = stats.t.ppf(0.975, df)
+            ci95 = tcrit * sem
+
+            lower = mean_trace - ci95
+            upper = mean_trace + ci95
+            axes[i].fill_between(x, lower, upper, alpha=0.3, linewidth=0)
+
+        # Optional grey individual traces
+        if traces:
+            for _, row in trial_traces.iterrows():
+                axes[i].plot(x, row.values, color="lightgrey", linewidth=1, alpha=0.9)
+
+        # Mean trace
+        axes[i].plot(x, mean_trace.values, color="red", linewidth=3)
+        axes[i].set_ylim(-0.1, 1.0)
 
         axes[i].set_title(f"Corridor {corridor}")
-        axes[i].set_xlabel("Spatial Bin")
+        axes[i].set_xlabel("Spatial bin")
         if i == 0:
-            axes[i].set_ylabel("dF/F Activity")
+            axes[i].set_ylabel("dF/F")
 
-        # Limit number of xticks to avoid crowding
+        # Sparse ticks
         max_xticks = 9
         xticks = np.linspace(0, n_bins - 1, num=min(n_bins, max_xticks), dtype=int)
         axes[i].set_xticks(xticks)
@@ -509,7 +541,7 @@ def average_trace_figure(neuron_ID, dff, behavior, n_bins=200, export_figure=Fal
 
     plt.tight_layout()
     if export_figure:
-        plt.savefig(f"neuron_{neuron_ID}_avg_trace.svg")
+        plt.savefig(f"neuron_{neuron_ID}_avg_trace.svg", bbox_inches="tight")
     plt.show()
 
     return binned_activity
@@ -644,6 +676,59 @@ def plot_neurons(file_path: Path, neuron_index: np.ndarray, spec_df, save_figure
         save_path = file_path / "place_cells_spatial_specificity_subplots.png"
         plt.savefig(save_path, dpi=300, bbox_inches="tight")
         save_path_svg = file_path / "place_cells_spatial_specificity_subplots.svg"
+        plt.savefig(save_path_svg)
+        print(f"Figure saved to {save_path}")
+    else:
+        plt.show()
+
+    plt.close()
+
+
+def plot_neurons_id(
+    file_path: Path, neuron_index: np.ndarray, colors=None, save_figure=False
+):
+    """
+    Plots the ROI of cells in the anatomical context.
+
+    Parameters:
+        file_path (Path): Path to the folder containing all files for a given dataset.
+        neuron_index (array): List of indices for place cells.
+        colors (list, optional): List of colors to use for the ROIs.
+                                 If fewer colors than neurons, they are cycled through.
+        save_figure (bool): Whether the figure should be saved or displayed.
+
+    Returns:
+        None
+    """
+    # Load the anatomical data
+    anatomy, mask = load_anatomy(file_path)
+
+    plt.figure(figsize=(5, 5))
+    plt.imshow(anatomy, cmap="gray", aspect="auto")
+    plt.axis("off")
+    plt.gca().set_frame_on(False)
+    plt.subplots_adjust(left=0, right=1, top=1, bottom=0)
+    plt.axis("off")
+
+    # Prepare color cycle
+    if colors is None:
+        colors = ["red", "cyan", "yellow", "magenta", "lime", "orange"]
+    color_cycle = cycle(colors)
+
+    # Plot each ROI
+    for id, color in zip(neuron_index, color_cycle):
+        y_coords, x_coords = np.where(mask == id + 1)
+        if len(y_coords) > 0:
+            plt.scatter(x_coords, y_coords, s=5, color=color, label=f"Neuron {id}")
+            neuron_mask = (mask == id + 1).astype(int)
+            plt.contour(neuron_mask, levels=[0.5], colors="white", linewidths=2)
+
+    plt.tight_layout()
+
+    if save_figure:
+        save_path = file_path / "neuron_id.png"
+        plt.savefig(save_path, dpi=300, bbox_inches="tight")
+        save_path_svg = file_path / "neuron_id.svg"
         plt.savefig(save_path_svg)
         print(f"Figure saved to {save_path}")
     else:
