@@ -526,12 +526,15 @@ def average_trace_figure(
 
         # Mean trace
         axes[i].plot(x, mean_trace.values, color="red", linewidth=3)
-        axes[i].set_ylim(-0.1, 1.0)
+        axes[i].set_ylim(-0.1, 2.0)
 
         axes[i].set_title(f"Corridor {corridor}")
         axes[i].set_xlabel("Spatial bin")
         if i == 0:
             axes[i].set_ylabel("dF/F")
+            axes[i].vlines([50, 150], 0, 2, "r", "dashed")
+        elif i != 0:
+            axes[i].vlines([50, 100], 0, 2, "r", "dashed")
 
         # Sparse ticks
         max_xticks = 9

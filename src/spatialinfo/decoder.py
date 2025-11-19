@@ -76,7 +76,7 @@ def create_templates(
     # create unique ID for each bin by adding offset according to corridor:
     unique_bins = np.array(
         [
-            bin_val + 30 if corridor != 0 else bin_val
+            bin_val + n_bins if corridor != 0 else bin_val
             for bin_val, corridor in zip(digit_array, behavior[:, 0])
         ]
     )
