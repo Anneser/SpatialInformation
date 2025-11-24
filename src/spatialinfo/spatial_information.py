@@ -445,6 +445,7 @@ def average_trace_figure(
     traces=True,
     conf_95=False,
     export_figure=False,
+    z_score=True,
 ):
     """
     For a given neuron ID, plot activity per spatial bin per corridor.
@@ -458,10 +459,24 @@ def average_trace_figure(
         traces (bool): plot individual trial traces (default True).
         conf_95 (bool): add 95% confidence interval around the mean (default False).
         export_figure (bool): save SVG figure (default False).
+        z_score (bool): z-score the neuron's activity before binning (default True).
     """
 
-    # --- Extract neuron activity and bin positions ---
-    neuron_activity = dff.iloc[:, neuron_ID]
+    # --- Extract neuron activity and (optionally) z-score ---
+    neuron_activity = dff.iloc[:, neuron_ID].copy()
+
+    if z_score:
+        mu = neuron_activity.mean()
+        sigma = neuron_activity.std(ddof=0)
+        if sigma == 0 or np.isclose(sigma, 0):
+            warnings.warn(
+                f"Std for neuron {neuron_ID} is zero or near zero; "
+                "skipping z-scoring."
+            )
+        else:
+            neuron_activity = (neuron_activity - mu) / sigma
+
+    # --- Prepare behavior & bin positions ---
     behavior = behavior.copy()
     behavior["Y_bin"] = pd.cut(behavior["Y"], bins=n_bins, labels=False)
 
@@ -526,15 +541,24 @@ def average_trace_figure(
 
         # Mean trace
         axes[i].plot(x, mean_trace.values, color="red", linewidth=3)
-        axes[i].set_ylim(-0.1, 2.0)
+
+        # Y-limits: different for z-scored vs raw dF/F
+        if z_score:
+            axes[i].set_ylim(-1, 12)  # tweak as needed
+        else:
+            axes[i].set_ylim(-0.1, 2.0)
 
         axes[i].set_title(f"Corridor {corridor}")
         axes[i].set_xlabel("Spatial bin")
         if i == 0:
-            axes[i].set_ylabel("dF/F")
-            axes[i].vlines([50, 150], 0, 2, "r", "dashed")
-        elif i != 0:
-            axes[i].vlines([50, 100], 0, 2, "r", "dashed")
+            axes[i].set_ylabel("z-scored dF/F" if z_score else "dF/F")
+            axes[i].vlines(
+                [50, 100], axes[i].get_ylim()[0], axes[i].get_ylim()[1], "r", "dashed"
+            )  # 50 150 for 2m
+        else:
+            axes[i].vlines(
+                [50, 100], axes[i].get_ylim()[0], axes[i].get_ylim()[1], "r", "dashed"
+            )  # 50 100 for 2m
 
         # Sparse ticks
         max_xticks = 9
