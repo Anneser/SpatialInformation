@@ -544,7 +544,7 @@ def average_trace_figure(
 
         # Y-limits: different for z-scored vs raw dF/F
         if z_score:
-            axes[i].set_ylim(-1, 12)  # tweak as needed
+            axes[i].set_ylim(-1, 5)  # tweak as needed
         else:
             axes[i].set_ylim(-0.1, 2.0)
 
@@ -553,7 +553,7 @@ def average_trace_figure(
         if i == 0:
             axes[i].set_ylabel("z-scored dF/F" if z_score else "dF/F")
             axes[i].vlines(
-                [50, 100], axes[i].get_ylim()[0], axes[i].get_ylim()[1], "r", "dashed"
+                [50, 150], axes[i].get_ylim()[0], axes[i].get_ylim()[1], "r", "dashed"
             )  # 50 150 for 2m
         else:
             axes[i].vlines(
